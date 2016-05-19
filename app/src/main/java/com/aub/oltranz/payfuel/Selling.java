@@ -3,7 +3,6 @@ package com.aub.oltranz.payfuel;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -11,13 +10,10 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import appBean.GridData;
-import appBean.GridNozzle;
-import appBean.GridPump;
 import databaseBean.DBHelper;
 import entities.Nozzle;
 import entities.Pump;
@@ -84,11 +80,10 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
     public void getPumpList(List<WorkStatus> statuses){
         Log.d(tag,"Populating pump and their nozzle from workstatus");
         List<String> tempPumpId=new ArrayList<String>();
-        GridPump gridPump;
-        GridNozzle gridNozzle;
-        List<GridNozzle>gridNozzleList;
-        List<GridPump> gridPumpList=new ArrayList<GridPump>();
-        GridData gridData=new GridData();
+
+        GridData gridData;
+
+        List<GridData> gridDataList=new ArrayList<GridData>();
         try{
             Iterator iterator=statuses.iterator();
             while (iterator.hasNext()){
@@ -100,30 +95,30 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     tempPumpId.add(String.valueOf(ws.getPumpId()));
 
                     Pump pump=db.getSinglePump(ws.getPumpId());
-                    gridPump=new GridPump();
-                    gridPump.setPumpId(pump.getPumpId());
-                    gridPump.setPumpName(pump.getPumpName());
-                    List<Nozzle> nozzles=db.getAllNozzlePerPump(pump.getPumpId());
-                    gridNozzleList=new ArrayList<GridNozzle>();
 
+
+                    List<Nozzle> nozzles=db.getAllNozzlePerPump(pump.getPumpId());
                     Iterator iterator1=nozzles.iterator();
                     while (iterator1.hasNext()){
                         Nozzle nozzle=new Nozzle();
                         nozzle=(Nozzle) iterator1.next();
-                        gridNozzle=new GridNozzle();
-                        gridNozzle.setNozzleId(nozzle.getNozzleId());
-                        gridNozzle.setNozzleName(nozzle.getNozzleName());
-                        gridNozzle.setPrice(nozzle.getUnitPrice());
-                        gridNozzle.setProduct(nozzle.getProductName());
-                        gridNozzleList.add(gridNozzle);
+
+                        gridData=new GridData();
+
+                        gridData.setPumpId(pump.getPumpId());
+                        gridData.setPumpName(pump.getPumpName());
+                        gridData.setNozzleId(nozzle.getNozzleId());
+                        gridData.setNozzleName(nozzle.getNozzleName());
+                        gridData.setPrice(nozzle.getUnitPrice());
+                        gridData.setProduct(nozzle.getProductName());
+                        gridData.setProductId(nozzle.getProductId());
+                        gridData.setIndex(String.valueOf(nozzle.getNozzleIndex()));
+
+                        gridDataList.add(gridData);
                     }
-                    gridPump.setNozzles(gridNozzleList);
-                    gridPumpList.add(gridPump);
                 }
             }
-
-            gridData.setmGridData(gridPumpList);
-            sAdapter=new StatusAdapter(this,gridData);
+            sAdapter=new StatusAdapter(this,gridDataList);
             gv.setAdapter(sAdapter);
             gv.setOnItemClickListener(this);
         }catch (Exception e){
