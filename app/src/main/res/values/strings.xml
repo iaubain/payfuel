@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">PayFuel</string>
+    <string name="invaliddata">Invalid Entry</string>
+    <string name="successnotification">success</string>
+    <string name="faillurenotification">fail</string>
+    <string name="nulluifeedback">Null FeedBack</string>
+    <string name="emptyfield">Empty Field(s)</string>
+    <string name="loginurl">http://41.74.172.132:8080/EngenPayFuel/AndroEngenWebService/pos/login</string>
+    <string name="logouturl">http://41.74.172.132:8080/EngenPayFuel/AndroEngenWebService/pos/logout</string>
+    <string name="pumpurl">http://41.74.172.132:8080/EngenPayFuel/PumpManagementService/pumpsbyuser/</string>
+    <string name="paymenturl">http://41.74.172.132:8080/EngenPayFuel/PaymentModeManagementService/paymentmodes/</string>
+    <string name="transactionurl">http://41.74.172.132:8080/EngenPayFuel/AndroEngenWebService/pos/sale</string>
+    <string name="registerdeviceurl">http://41.74.172.132:8080/EngenPayFuel/DeviceManagementService/device/register</string>
+    <string name="registerpumps">http://41.74.172.132:8080/EngenPayFuel/PumpManagementService/assignUserToPumpNozzle</string>
+    <string name="syncurl">http://</string>
+    <string name="post">POST</string>
+    <string name="get">GET</string>
+    <string name="connectionerror">Server/Connectivity Error</string>
+    <string name="ambiguous">Ambiguous response</string>
+    <string name="deviceregfail">Device Registration failed</string>
+    <string name="loginproblem">Login Problem</string>
+    <string name="userid">userId</string>
+    <string name="title_activity_selling">Selling</string>
+    <string name="wlcm">Welcome </string>
+</resources>
