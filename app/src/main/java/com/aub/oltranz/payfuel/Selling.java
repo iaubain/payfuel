@@ -1,7 +1,9 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +21,7 @@ import entities.Nozzle;
 import entities.Pump;
 import entities.WorkStatus;
 import features.StatusAdapter;
+import progressive.PumpDetails;
 
 public class Selling extends ActionBarActivity implements AdapterView.OnItemClickListener {
 
@@ -33,6 +36,12 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 
     DBHelper db;
     StatusAdapter sAdapter;
+
+    StrictMode.ThreadPolicy policy;
+    Dialog dialog;
+
+    //Transaction valiables
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +78,11 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
     public void initAppComponents(){
         Log.d(tag,"Initializing Activity Components");
         db=new DBHelper(this);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
     }
 
     public List<WorkStatus> workStatusList(int userId){
@@ -131,4 +145,9 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         Log.v(tag, "You clicked Pump: " + ((TextView) view.findViewById(R.id.pumpid)).getText() + " And Nozzle: " + ((TextView) view.findViewById(R.id.nozzleid)).getText());
     }
+
+    public  void setAmntOrQty(PumpDetails pDetails){
+
+    }
+
 }
