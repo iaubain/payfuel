@@ -79,7 +79,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String nozzleIndex ="nozzleIndex";
     public static final String statusCode ="statusCode";
     public static final String createNozzleTable = "create table "+ nozzleTable +
-            "(" + nozzleId + " integer primary key, " + nozzleName + " text,"+ nozzleIndex + " text,"+ pumpId + " integer," + productId + " integer,"+ productName + " text, "+ price + " integer, "+statusCode+" integer)";
+            "(" + nozzleId + " integer primary key, " + nozzleName + " text,"+ nozzleIndex + " text,"+ pumpId + " integer," + productId + " integer,"+ productName + " text, "+ price + " integer, "+statusCode+" integer, "+userName+" text)";
 
 
     //Payment Mode
@@ -113,12 +113,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String authorisationCode="code";
     public static final String time="time";
     public static final String status="status";
+    public static final String authenticationCode="authenticationcode";
 
     public static final String createTransactionTable = "create table "+ transactionTable + "("+ transactionId +" integer primary key," +
             userId + " integer, " + deviceId + " text," + branchId + " integer," +
             productId + " integer," + nozzleId + " integer,"+ pumpId + " integer," + paymentModeId + " integer," +
             amount+" text,"+quantity+" text,"+ status +" integer, "+customerName+" text, " + plateNumber + " text," + telephone + " text,"
-            +tin+" text," + voucherNumber + " text," + authorisationCode + " text,"+ time + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+            +tin+" text," + voucherNumber + " text," + authorisationCode + " text,"+ authenticationCode + " integer,"+ time + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
 
 
     //Asynchronious Transaction
@@ -126,9 +127,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String asyncId="id";
     public static final String sum="sum";
     public static final String createAsyncTable = "create table "+ asyncTable +
-            "(" + asyncId + " integer primary key AUTOINCREMENT, " + userId + " integer,"+ deviceId + " text,"+ branchId + " integer," + transactionId + " integer,"+sum+" integer)";
+            "(" + asyncId + " integer primary key AUTOINCREMENT, " + userId + " integer, "+ deviceId + " text, "+ branchId + " integer, " + transactionId + " integer, "+sum+" integer)";
 
-    //Asynchronious Transaction
+    //Work Status
     public static final String statusTable="statusTable";
     public static final String statusId="statusId";
     //public static final String userId="userId";
@@ -136,7 +137,7 @@ public class DBHelper extends SQLiteOpenHelper {
     //public static final String nozzleId;
     public static final String statusMessage="statusMessage";
     public static final String createStatusTable = "create table "+ statusTable +
-            "(" + statusId + " integer primary key AUTOINCREMENT, " + userId + " integer,"+ pumpId + " text,"+ nozzleId + " integer," + statusMessage + " integer, "+statusCode+" integer)";
+            "(" + statusId + " integer primary key AUTOINCREMENT, " + userId + " integer, "+ pumpId + " text,"+ nozzleId + " integer," + statusMessage + " integer, "+statusCode+" integer)";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -326,13 +327,17 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(pumpId,st.getPumpId());
         values.put(amount, st.getAmount());
         values.put(quantity, st.getQuantity());
-        values.put(plateNumber, st.getPaymentModeId());
+        values.put(plateNumber, st.getPlateNumber());
         values.put(telephone, st.getTelephone());
         values.put(customerName, st.getName());
         values.put(tin, st.getTin());
         values.put(voucherNumber, st.getVoucherNumber());
         values.put(authorisationCode, st.getAuthorisationCode());
-        values.put(status, st.getAuthenticationCode());
+        values.put(authenticationCode, st.getAuthenticationCode());
+        if(st.getStatus()!= 0)
+            values.put(status,st.getStatus());
+        else
+            values.put(status,0);
         //use the default in the database
        // values.put(time,st.getDeviceTransactionTime());
 
@@ -354,7 +359,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null)
             c.moveToFirst();
-        st.setDeviceTransactionId(c.getInt(c.getColumnIndex(transactionId)));
+        st.setDeviceTransactionId(c.getLong(c.getColumnIndex(transactionId)));
         st.setNozzleId(c.getInt(c.getColumnIndex(nozzleId)));
         st.setAmount(Double.parseDouble(c.getString(c.getColumnIndex(amount))));
         st.setQuantity(Double.parseDouble(c.getString(c.getColumnIndex(quantity))));
@@ -365,7 +370,15 @@ public class DBHelper extends SQLiteOpenHelper {
         st.setVoucherNumber(c.getString(c.getColumnIndex(voucherNumber)));
         st.setAuthorisationCode(c.getString(c.getColumnIndex(authorisationCode)));
         st.setDeviceTransactionTime(c.getString(c.getColumnIndex(time)).toString());
-        st.setAuthenticationCode(c.getInt(c.getColumnIndex(status)));
+        st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+        st.setDeviceNo(c.getString(c.getColumnIndex(deviceId)));
+        st.setStatus(c.getInt(c.getColumnIndex(status)));
+        st.setBranchId(c.getInt(c.getColumnIndex(branchId)));
+        st.setUserId(c.getInt(c.getColumnIndex(userId)));
+        st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+        st.setPumpId(c.getInt(c.getColumnIndex(pumpId)));
+        st.setProductId(c.getInt(c.getColumnIndex(productId)));
+        st.setPaymentModeId(c.getInt(c.getColumnIndex(paymentModeId)));
 
         return st;
     }
@@ -386,7 +399,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             while(c.isAfterLast() == false){
                 SellingTransaction st = new SellingTransaction();
-                st.setDeviceTransactionId(c.getInt(c.getColumnIndex(transactionId)));
+                st.setDeviceTransactionId(c.getLong(c.getColumnIndex(transactionId)));
                 st.setNozzleId(c.getInt(c.getColumnIndex(nozzleId)));
                 st.setAmount(Double.parseDouble(c.getString(c.getColumnIndex(amount))));
                 st.setQuantity(Double.parseDouble(c.getString(c.getColumnIndex(quantity))));
@@ -397,8 +410,60 @@ public class DBHelper extends SQLiteOpenHelper {
                 st.setVoucherNumber(c.getString(c.getColumnIndex(voucherNumber)));
                 st.setAuthorisationCode(c.getString(c.getColumnIndex(authorisationCode)));
                 st.setDeviceTransactionTime(c.getString(c.getColumnIndex(time)).toString());
-                st.setAuthenticationCode(c.getInt(c.getColumnIndex(status)));
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setDeviceNo(c.getString(c.getColumnIndex(deviceId)));
+                st.setStatus(c.getInt(c.getColumnIndex(status)));
+                st.setBranchId(c.getInt(c.getColumnIndex(branchId)));
+                st.setUserId(c.getInt(c.getColumnIndex(userId)));
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setPumpId(c.getInt(c.getColumnIndex(pumpId)));
+                st.setProductId(c.getInt(c.getColumnIndex(productId)));
+                st.setPaymentModeId(c.getInt(c.getColumnIndex(paymentModeId)));
+                // adding transaction to list
+                sts.add(st);
+                c.moveToNext();
+            }
+        }
 
+        return sts;
+    }
+
+    /**
+     * getting all Transactions per user
+     */
+    public List<SellingTransaction> getAllTransactionsPerUser(long user_id) {
+        List<SellingTransaction> sts = new ArrayList<SellingTransaction>();
+        String selectQuery = "SELECT  * FROM " + transactionTable + " WHERE "+ userId + " = " + user_id+" ORDER BY "+time+" DESC";
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            while (c.isAfterLast() == false){
+                SellingTransaction st = new SellingTransaction();
+                st.setDeviceTransactionId(c.getLong(c.getColumnIndex(transactionId)));
+                st.setNozzleId(c.getInt(c.getColumnIndex(nozzleId)));
+                st.setAmount(Double.parseDouble(c.getString(c.getColumnIndex(amount))));
+                st.setQuantity(Double.parseDouble(c.getString(c.getColumnIndex(quantity))));
+                st.setPlateNumber(c.getString(c.getColumnIndex(plateNumber)));
+                st.setTelephone(c.getString(c.getColumnIndex(telephone)));
+                st.setName(c.getString(c.getColumnIndex(customerName)));
+                st.setTin(c.getString(c.getColumnIndex(tin)));
+                st.setVoucherNumber(c.getString(c.getColumnIndex(voucherNumber)));
+                st.setAuthorisationCode(c.getString(c.getColumnIndex(authorisationCode)));
+                st.setDeviceTransactionTime(c.getString(c.getColumnIndex(time)).toString());
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setDeviceNo(c.getString(c.getColumnIndex(deviceId)));
+                st.setStatus(c.getInt(c.getColumnIndex(status)));
+                st.setBranchId(c.getInt(c.getColumnIndex(branchId)));
+                st.setUserId(c.getInt(c.getColumnIndex(userId)));
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setPumpId(c.getInt(c.getColumnIndex(pumpId)));
+                st.setProductId(c.getInt(c.getColumnIndex(productId)));
+                st.setPaymentModeId(c.getInt(c.getColumnIndex(paymentModeId)));
                 // adding transaction to list
                 sts.add(st);
                 c.moveToNext();
@@ -451,17 +516,17 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(transactionId, st.getDeviceTransactionId());
-        values.put(amount,st.getAmount());
-        values.put(quantity,st.getQuantity());
-        values.put(plateNumber,st.getPaymentModeId());
-        values.put(telephone,st.getTelephone());
-        values.put(customerName,st.getName());
-        values.put(tin, st.getTin());
-        values.put(voucherNumber,st.getVoucherNumber());
-        values.put(authorisationCode, st.getAuthorisationCode());
-        values.put(status, st.getAuthenticationCode());
-
+//        values.put(transactionId, st.getDeviceTransactionId());
+//        values.put(amount,st.getAmount());
+//        values.put(quantity,st.getQuantity());
+//        values.put(plateNumber,st.getPaymentModeId());
+//        values.put(telephone,st.getTelephone());
+//        values.put(customerName,st.getName());
+//        values.put(tin, st.getTin());
+//        values.put(voucherNumber,st.getVoucherNumber());
+//        values.put(authorisationCode, st.getAuthorisationCode());
+//        values.put(authenticationCode, st.getAuthenticationCode());
+        values.put(status,st.getStatus());
         // updating row
         return db.update(transactionTable, values, userId + " = ?", new String[]{String.valueOf(st.getDeviceTransactionId())});
     }
@@ -591,6 +656,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(productId,nozzle.getProductId());
         values.put(productName, nozzle.getProductName());
         values.put(price, nozzle.getUnitPrice());
+        values.put(userName,nozzle.getUserName());
         // insert row
         long dbId = db.insert(nozzleTable, null, values);
 
@@ -617,6 +683,7 @@ public class DBHelper extends SQLiteOpenHelper {
             nozzle.setNozzleName(c.getString(c.getColumnIndex(nozzleName)));
             nozzle.setUnitPrice(c.getInt(c.getColumnIndex(price)));
             nozzle.setStatusCode(c.getInt(c.getColumnIndex(statusCode)));
+            nozzle.setUserName(c.getString(c.getColumnIndex(userName)));
 
             return nozzle;
         }
@@ -647,6 +714,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 nozzle.setNozzleName(c.getString(c.getColumnIndex(nozzleName)));
                 nozzle.setUnitPrice(c.getInt(c.getColumnIndex(price)));
                 nozzle.setStatusCode(c.getInt(c.getColumnIndex(statusCode)));
+                nozzle.setUserName(c.getString(c.getColumnIndex(userName)));
 
                 // adding nozzle to list
                 nozzles.add(nozzle);
@@ -681,6 +749,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 nozzle.setNozzleName(c.getString(c.getColumnIndex(nozzleName)));
                 nozzle.setUnitPrice(c.getInt(c.getColumnIndex(price)));
                 nozzle.setStatusCode(c.getInt(c.getColumnIndex(statusCode)));
+                nozzle.setUserName(c.getString(c.getColumnIndex(userName)));
 
                 // adding nozzle to list
                 nozzles.add(nozzle);
@@ -690,6 +759,18 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+    /**
+     * Updating a selectedPump
+     */
+    public int updateNozzle(Nozzle nozzle) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(nozzleIndex,nozzle.getNozzleIndex());
+
+        // updating row
+        return db.update(nozzleTable, values, nozzleId + " = ?", new String[]{String.valueOf(nozzle.getNozzleId())});
     }
 
 
@@ -820,7 +901,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(paymentModeId,pm.getPaymentModeId());
         values.put(paymentName, pm.getName());
         values.put(paymentType,pm.getPaymentType());
-        values.put(paymentStatus,pm.getStatus());
+        values.put(paymentStatus, pm.getStatus());
         values.put(paymentDescr, pm.getDescr());
         // insert row
         long dbId = db.insertWithOnConflict(paymentModeTable, null, values, SQLiteDatabase.CONFLICT_REPLACE);
@@ -1045,7 +1126,7 @@ public class DBHelper extends SQLiteOpenHelper {
     /**
      * Creating a product
      */
-    public long createDevice(Product pr) {
+    public long createProduct(Product pr) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -1057,6 +1138,27 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return dbId;
     }
+
+    /**
+     * get single nozzle pump
+     */
+    public Product getSingleProduct(long p_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + productTable + " WHERE " + productId + " = " + p_id;
+        Log.e(LOG, selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c != null && c.getCount()>0){
+            c.moveToFirst();
+            Product product=new Product();
+            product.setProductId(c.getInt(c.getColumnIndex(productId)));
+            product.setProductName(c.getString(c.getColumnIndex(productName)));
+            product.setUnitPrice((double) c.getInt(c.getColumnIndex(price)));
+            return product;
+        }
+        return null;
+    }
+
     /**
      * getting product count
      */
@@ -1092,9 +1194,12 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+
+
+
         values.put(deviceId, at.getDeviceNo());
         values.put(branchId, at.getBranchId());
-        values.put(deviceId, at.getDeviceNo());
+        values.put(userId, at.getUserId());
         values.put(transactionId, at.getTransactionId());
         values.put(sum, at.getSum());
 
@@ -1123,6 +1228,29 @@ public class DBHelper extends SQLiteOpenHelper {
         at.setSum(c.getInt(c.getColumnIndex(sum)));
 
         return at;
+    }
+
+    /**
+     * get single Async per Transactoin ID
+     */
+    public AsyncTransaction getSingleAsyncPerTransacton(long t_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        AsyncTransaction at=new AsyncTransaction();
+        String selectQuery = "SELECT  * FROM " + asyncTable + " WHERE "+ transactionId + " = " + t_id;
+        Log.e(LOG, selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c != null && c.getCount()>0){
+            c.moveToFirst();
+            at.setId(c.getInt(c.getColumnIndex(asyncId)));
+            at.setUserId(c.getInt(c.getColumnIndex(userId)));
+            at.setBranchId(c.getInt(c.getColumnIndex(branchId)));
+            at.setDeviceNo(c.getString(c.getColumnIndex(deviceId)));
+            at.setSum(c.getInt(c.getColumnIndex(sum)));
+
+            return at;
+        }
+        return null;
     }
 
     /**
@@ -1347,7 +1475,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //
 //                // adding Status to list
 //                statuses.add(ws);
-//                c.moveToNext();
+                c.moveToNext();
             }
         }
 

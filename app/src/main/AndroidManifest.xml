@@ -43,7 +43,12 @@
         <activity
             android:name=".Selling"
             android:label="@string/title_activity_selling" />
-        <activity android:name=".Report"></activity>
+        <activity android:name=".Report" />
+
+        <service
+            android:name=".PayFuelTransactionService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

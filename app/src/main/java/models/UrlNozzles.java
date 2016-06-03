@@ -19,6 +19,9 @@ public class UrlNozzles {
     private String productName;
     @JsonProperty("unitPrice")
     private int unitPrice;
+    @JsonProperty("userName")
+    private String userName;
+
 
     public int getNozzleId() {
         return nozzleId;
@@ -66,5 +69,13 @@ public class UrlNozzles {
 
     public void setUnitPrice(int unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

@@ -10,7 +10,9 @@ import appBean.DeviceRegistrationResponse;
 import appBean.LoadPumpsResponse;
 import appBean.Login;
 import appBean.LoginResponse;
+import appBean.LogoutResponse;
 import appBean.PaymentModeResponse;
+import appBean.TransactionResponse;
 
 /**
  * Created by Owner on 4/27/2016.
@@ -123,6 +125,40 @@ public class MapperClass {
                 ChoosenPumpResponse cpr =mapper.readValue(urlResult,ChoosenPumpResponse.class);
                 Log.d(tag,"mapped Object is: "+cpr.getClass().getSimpleName());
                 return cpr;
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(tag,"Exit With Error:"+e.getMessage());
+                System.out.println("Exit with Error: "+e.getMessage());
+            }
+        }
+
+        //Send Logout Data
+        else if(urlResult.contains("\"LogoutOpModel\"")){
+            Log.d(tag,"Response redirected to LogoutResponse");
+            mapper= new ObjectMapper();
+
+            mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            try {
+                LogoutResponse lr =mapper.readValue(urlResult,LogoutResponse.class);
+                Log.d(tag,"mapped Object is: "+lr.getClass().getSimpleName());
+                return lr;
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(tag,"Exit With Error:"+e.getMessage());
+                System.out.println("Exit with Error: "+e.getMessage());
+            }
+        }
+
+        //Send Transaction Data
+        else if(urlResult.contains("\"SaleDetailsModel\"")){
+            Log.d(tag,"Response redirected to TransactionResponse");
+            mapper= new ObjectMapper();
+
+            mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            try {
+                TransactionResponse tr =mapper.readValue(urlResult,TransactionResponse.class);
+                Log.d(tag,"mapped Object is: "+tr.getClass().getSimpleName());
+                return tr;
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(tag,"Exit With Error:"+e.getMessage());

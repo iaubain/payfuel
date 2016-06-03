@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:inputType="phone"
         android:ems="10"
-        android:hint="Type in the telephone number"
-        android:id="@+id/editText"
+        android:hint="fill the tel number"
+        android:id="@+id/tel"
         android:layout_gravity="center_horizontal" />
 
     <TableRow

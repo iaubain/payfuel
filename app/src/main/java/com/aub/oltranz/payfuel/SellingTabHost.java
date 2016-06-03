@@ -1,19 +1,30 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import appBean.LogoutResponse;
 import databaseBean.DBHelper;
+import entities.DeviceIdentity;
 import entities.Logged_in_user;
+import features.HandleUrl;
+import features.HandleUrlInterface;
+import models.LogoutData;
+import models.MapperClass;
 
-public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeListener {
+public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeListener, HandleUrlInterface {
     String tag="PayFuel: "+getClass().getSimpleName();
 
     TextView name;
@@ -21,8 +32,11 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
     Context context;
 
     DBHelper db;
+    HandleUrl handleUrl;
+    MapperClass mc;
 
     int userId;
+    boolean doubleBackToExitPressedOnce = false;
 
     Intent intent;
     Bundle savedBundle;
@@ -46,7 +60,7 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
     }
 
     public void userValidity(){
-        Log.d(tag,"checking user validity");
+        Log.d(tag, "checking user validity");
         int userCount=db.getUserCount();
         if(userCount>0){
             Log.d(tag,"Checking user validity succeeded");
@@ -130,29 +144,106 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         Log.d(tag, "Initializing Activity Components");
         context=this;
         db=new DBHelper(context);
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
     }
 
     public void logout(View v){
-        Log.v(tag,"Logging out...");
+        Log.v(tag, "Logging out...");
 
+        if (doubleBackToExitPressedOnce) {
+            DeviceIdentity di=db.getSingleDevice();
+            LogoutData ld=new LogoutData();
+            try {
+                ld.setDevId(di.getDeviceNo());
+                ld.setUserId(userId);
+                mc=new MapperClass();
+
+                handleUrl=new HandleUrl(this,this,getResources().getString(R.string.logouturl),getResources().getString(R.string.post),mc.mapping(ld));
+            }catch (Exception e){
+                uiFeedBack(e.getMessage());
+            }
+
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click Logout again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce = false;
+            }
+        }, 2000);
     }
 
     @Override
     public void onTabChanged(String tabTag) {
-        Log.d(tag,"Current tab tag: "+tHost.getCurrentTabTag());
-//        for(int i=0;i<tHost.getTabWidget().getTabCount();i++){
-//            if(tabId.equals(tHost.getCurrentTabTag())){
-//                tHost.getTabWidget().getChildAt(i) .setBackgroundResource(R.drawable.tab_selector);
-//            }
-//        }
-//        if (tabId.equals("first")) {
-//            tHost.getTabWidget().getChildAt(0) .setBackgroundResource(R.drawable.tab_selector);
-//            tHost.getTabWidget().getChildAt(1).setBackgroundResource(R.drawable.tabunselcolor);
-//        } else if (tabId.equals("second")) {
-//            tHost.getTabWidget().getChildAt(1) .setBackgroundResource(R.drawable.tab_selector);
-//            tHost.getTabWidget().getChildAt(0).setBackgroundResource(R.drawable.tabunselcolor);
-//            //            tHost.getTabWidget().getChildAt(1).setBackgroundColor(getResources().getColor(R.color.transparent));
-//            //            tHost.getTabWidget().getChildAt(0).setBackgroundColor(getResources().getColor(R.color.transparent));
-//        }
+        Log.d(tag, "Current tab tag: " + tHost.getCurrentTabTag());
+    }
+
+    @Override
+    public void resultObject(Object object) {
+        if (object == null) {
+            uiFeedBack(getResources().getString(R.string.connectionerror));
+        }else{
+            if (object.getClass().getSimpleName().equalsIgnoreCase("LogoutResponse")){
+                LogoutResponse lr=(LogoutResponse) object;
+                try{
+                    if(lr.getStatusCode() != 100)
+                        uiFeedBack(lr.getMessage());
+                    else{
+                        long log=0;
+                        //delete Work Status
+                        db.deleteStatusByUser(userId);
+                        //delete user
+
+                        Logged_in_user user=new Logged_in_user();
+                        user.setLogged(0);
+                        log=db.updateUser(user);
+                        Log.v(tag, "User log status 0: " + log);
+                        db.deleteUser(userId);
+                        db.deleteStatusByUser(userId);
+
+                        intent=new Intent(this,Home.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        finish();
+                        startActivity(intent);
+                    }
+                }catch (Exception e){
+                    uiFeedBack(getResources().getString(R.string.faillurenotification));
+                }
+            }else{
+                uiFeedBack(getResources().getString(R.string.ambiguous));
+            }
+        }
+    }
+
+    @Override
+    public void feedBack(String message) {
+        uiFeedBack(message);
+    }
+
+    public void uiFeedBack(String message){
+        AlertDialog alertDialog = new AlertDialog.Builder(SellingTabHost.this).create();
+        alertDialog.setTitle("Attention");
+        if(!TextUtils.isEmpty(message)) {
+            alertDialog.setMessage(message);
+        }else{
+            alertDialog.setMessage(getResources().getString(R.string.faillurenotification));
+        }
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 }

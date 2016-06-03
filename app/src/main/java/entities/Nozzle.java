@@ -11,6 +11,7 @@ public class Nozzle {
 	private String productName;
 	private int unitPrice;
     private int statusCode;
+    private String userName;
 
     public int getNozzleId() {
         return nozzleId;
@@ -74,5 +75,13 @@ public class Nozzle {
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

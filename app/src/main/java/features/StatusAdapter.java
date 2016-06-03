@@ -26,6 +26,15 @@ public class StatusAdapter extends BaseAdapter {
 
     public StatusAdapter(Context context, List<GridData> mData) {
         Log.d(tag,"Initialise griview Content");
+        if(mData.isEmpty() || mData.size()<=0){
+            GridData gridData=new GridData();
+
+            gridData.setPumpName("No Pump");
+            gridData.setNozzleName("No Nozzle");
+            gridData.setIndex("No Index");
+
+            mData.add(gridData);
+        }
         this.context = context;
         this.mData = mData;
     }
@@ -65,7 +74,6 @@ public class StatusAdapter extends BaseAdapter {
         TextView productId = (TextView) gridViewElement.findViewById(R.id.productid);
         ImageView icon=(ImageView) gridViewElement.findViewById(R.id.nozzleicon);
 
-//        if (view == null) {
             GridData gridData=new GridData();
             gridData=mData.get(position);
             nozzleId.setText(String.valueOf(gridData.getNozzleId()));
@@ -77,41 +85,6 @@ public class StatusAdapter extends BaseAdapter {
             pumpName.setText(gridData.getPumpName());
             index.setText(gridData.getIndex());
 
-//            GridPump gridPump;
-//            GridNozzle gridNozzle;
-//            List<GridNozzle> gridNozzleList;
-//            List<GridPump> gridPumpList=new ArrayList<GridPump>();
-//            GridData gridData=new GridData();
-//
-//            gridPumpList=mData.getmGridData();
-//            Iterator iterator=gridPumpList.iterator();
-//            while(iterator.hasNext()){
-//
-//                gridPump=new GridPump();
-//                gridPump=(GridPump) iterator.next();
-//
-//                gridNozzleList=new ArrayList<GridNozzle>();
-//                gridNozzleList=gridPump.getNozzles();
-//                Iterator iterator1=gridNozzleList.iterator();
-//                while(iterator1.hasNext()){
-//
-//                    gridNozzle=new GridNozzle();
-//                    gridNozzle=(GridNozzle) iterator1.next();
-//
-//                    pumpId.setText(String.valueOf(gridPump.getPumpId()));
-//                    pumpName.setText(String.valueOf(gridPump.getPumpName()));
-//
-//                    nozzleId.setText(String.valueOf(gridNozzle.getNozzleId()));
-//                    nozzleName.setText(String.valueOf(gridNozzle.getNozzleName()));
-//                    product.setText(String.valueOf(gridNozzle.getProduct()));
-//                    index.setText("Index");
-//                    price.setText(String.valueOf(gridNozzle.getPrice()));
-//                }
-//            }
-
-//        } else {
-//            gridViewElement = (View) view;
-//        }
 
         return gridViewElement;
     }

@@ -4,17 +4,17 @@ package progressive;
  * Created by Owner on 5/19/2016.
  */
 public class PayDetails {
-    private String payId;
+    private int payId;
     private String tel;
     private String voucher;
     private String authorCode;
-    private String authentCode;
+    private int authentCode;
 
-    public String getPayId() {
+    public int getPayId() {
         return payId;
     }
 
-    public void setPayId(String payId) {
+    public void setPayId(int payId) {
         this.payId = payId;
     }
 
@@ -42,11 +42,11 @@ public class PayDetails {
         this.authorCode = authorCode;
     }
 
-    public String getAuthentCode() {
+    public int getAuthentCode() {
         return authentCode;
     }
 
-    public void setAuthentCode(String authentCode) {
+    public void setAuthentCode(int authentCode) {
         this.authentCode = authentCode;
     }
 }

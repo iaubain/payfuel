@@ -14,8 +14,7 @@ public class ChoosenPumpAndNozzle {
     @JsonProperty("nozzleId")
     private int nozzleId;
     @JsonProperty("status")
-    private
-    int status;
+    private int status;
     @JsonProperty("message")
     private
     String message;

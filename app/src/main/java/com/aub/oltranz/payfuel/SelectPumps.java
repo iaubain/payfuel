@@ -18,6 +18,7 @@ import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     //Disabling all UI element
     public void disableUI(){
         Log.d(tag, "Disable all UI Elements");
-        LinearLayout layout = (LinearLayout) findViewById(R.id.pumplayout);
+        RelativeLayout layout = (RelativeLayout) findViewById(R.id.pumplayout);
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             if(child.isEnabled())
@@ -253,7 +254,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='#012c92'>Nozzle Status</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='"+getResources().getColor(R.color.appcolor)+"'>Nozzle Status</font>"));
 
         nozzleListView =(ListView) dialog.findViewById(R.id.nozzlelist);
         Button finish=(Button) dialog.findViewById(R.id.nozzlefinish);
@@ -279,21 +280,21 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                         nozzleDenialCheck += 1;
                         break;
                     }
-                    if(lbl.getText().toString().equals("Accepted")){
+                    if (lbl.getText().toString().equals("Accepted")) {
                         nozzleAcceptCheck += 1;
                     }
                 }
                 ImageView pumpImg = (ImageView) pumpView.findViewById(R.id.icon);
                 TextView pumpLabel = (TextView) pumpView.findViewById(R.id.indicator);
-                if(nozzleDenialCheck > 0){
-                        pumpImg.setImageResource(R.drawable.pump_red);
-                        pumpLabel.setText("Nozzle(s) rejected");
-                        pumpLabel.setTextColor(context.getResources().getColor(R.color.error));
-                } else if(nozzleAcceptCheck > 0){
+                if (nozzleDenialCheck > 0) {
+                    pumpImg.setImageResource(R.drawable.pump_red);
+                    pumpLabel.setText("Nozzle(s) rejected");
+                    pumpLabel.setTextColor(context.getResources().getColor(R.color.error));
+                } else if (nozzleAcceptCheck > 0) {
                     pumpLabel.setText("Nozzle(s) Accepted");
                     pumpLabel.setTextColor(context.getResources().getColor(R.color.rdcolor));
                     pumpImg.setImageResource(R.drawable.pump_green);
-                }else{
+                } else {
                     pumpLabel.setText("Available to Choose");
                     pumpLabel.setTextColor(context.getResources().getColor(R.color.rdoff));
                     pumpImg.setImageResource(R.drawable.pump_blue);
@@ -313,7 +314,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
         nozzleList=db.getAllNozzlePerPump(pumpId);
         if(!nozzleList.isEmpty()){
             nozzleId=new ArrayList<String>();
-            List<String> nozzleNameList=new ArrayList<String>(), indexList=new ArrayList<String>(), productList=new ArrayList<String>(),imgIdList=new ArrayList<String>();
+            List<String> nozzleNameList=new ArrayList<String>()/*, indexList=new ArrayList<String>(), productList=new ArrayList<String>(),imgIdList=new ArrayList<String>()*/;
 
             Iterator iterator=nozzleList.iterator();
             while (iterator.hasNext()){
@@ -321,19 +322,19 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 nozzle=(Nozzle) iterator.next();
 
                 nozzleNameList.add(nozzle.getNozzleName());
-                indexList.add(String.valueOf(nozzle.getNozzleIndex()));
-                productList.add(nozzle.getProductName());
-                nozzleId.add(nozzle.getNozzleId());
+//                indexList.add(String.valueOf(nozzle.getNozzleIndex()));
+//                productList.add(nozzle.getProductName());
+//                nozzleId.add(nozzle.getNozzleId());
 
-                if(!(((nozzle.getStatusCode())&7)!= 7)){
-                    imgIdList.add(String.valueOf(R.drawable.nozzle_red));
-                }else
-                    imgIdList.add(String.valueOf(R.drawable.nozzle_blue));
+//                if(!(((nozzle.getStatusCode())&7)!= 7)){
+//                    imgIdList.add(String.valueOf(R.drawable.nozzle_red));
+//                }else
+//                    imgIdList.add(String.valueOf(R.drawable.nozzle_blue));
             }
 
             //I need to add nozzle status list so the one that are not available I deactivate the choosing button
 
-            nozzleAdapter=new NozzleListAdapter(this,userId,pumpId,v,nozzleNameList,imgIdList,indexList,productList,nozzleId);
+            nozzleAdapter=new NozzleListAdapter(this,userId,pumpId,v,nozzleList,nozzleNameList/*,nozzleNameList,imgIdList,indexList,productList,nozzleId*/);
             nozzleListView.setAdapter(nozzleAdapter);
             nozzleListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -347,7 +348,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     //When Next is Clicked
     public void next(View v){
         Log.d(tag,"Next Clicked");
-        if(db.getStatusCountByUser(userId)<=0 && db.isThereAnyStatus(userId)){
+        if(!db.isThereAnyStatus(userId)){
             //toast an error message
             Log.d(tag, "Next Clicked but no status was there before");
 
@@ -355,10 +356,10 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    next.setText("Next >>>");
-                    next.setTextColor(getResources().getColor(R.color.rdcolor));
+                    next.setText("NEXT");
+                    next.setTextColor(getResources().getColor(R.color.positive));
                 }
-            }, 1000);
+            }, 3000);
             next.setText("No Status Found");
             next.setTextColor(getResources().getColor(R.color.error));
         }else{
@@ -374,13 +375,38 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 View divider = dialog.findViewById(dividerId);
                 divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
             }
-            dialog.setTitle(Html.fromHtml("<font color='#012c92'>Confirm to get Started</font>"));
+            dialog.setTitle(Html.fromHtml("<font color='"+getResources().getColor(R.color.appcolor)+"'>Confirm to get Started</font>"));
 
             expListView = (ExpandableListView) dialog.findViewById(R.id.lvExp);
             Button done=(Button) dialog.findViewById(R.id.done);
             Button back=(Button) dialog.findViewById(R.id.back);
 
-            prepareListData(userId,pumpNames,pumpId);
+            List<WorkStatus> statuses=new ArrayList<WorkStatus>();
+            List<String> pNames=new ArrayList<String>();
+            List<String> pIds=new ArrayList<String>();
+            List<String> pumpIdTemp=new ArrayList<String>();
+            statuses=db.getAllStatus(userId);
+            if(!statuses.isEmpty()){
+                Iterator iterator=statuses.iterator();
+                while (iterator.hasNext()){
+                    WorkStatus ws=new WorkStatus();
+                    ws=(WorkStatus)iterator.next();
+                    Pump pump=new Pump();
+                    pump=db.getSinglePump(ws.getPumpId());
+                    if(pumpIdTemp.isEmpty()){
+                        pumpIdTemp.add(String.valueOf(pump.getPumpId()));
+                        pNames.add(pump.getPumpName());
+                        pIds.add(String.valueOf(pump.getPumpId()));
+                    }else if(!pumpIdTemp.contains(""+pump.getPumpId())){
+                        pumpIdTemp.add(String.valueOf(pump.getPumpId()));
+                        pNames.add(pump.getPumpName());
+                        pIds.add(String.valueOf(pump.getPumpId()));
+                    }
+                }
+            }
+            pumpIdTemp=null;
+
+            prepareListData(userId,pNames,pIds);
 
             listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
 
@@ -474,7 +500,9 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 public void onClick(View view) {
                     Log.v(tag,"Work status confirmed and ready to move");
                     //register pump
+                    dialog.dismiss();
                     registerPump();
+
                 }
             });
 
@@ -516,6 +544,15 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     }
 
     public void uiFeedBack(String message){
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                tv.setText("");
+            }
+        }, 3000);
+        if(dialog.isShowing())
+            dialog.dismiss();
         if(message==null || TextUtils.isEmpty(message)){
             tv.setText(getResources().getString(R.string.nulluifeedback));
         }else{
@@ -544,7 +581,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                         Nozzle nozzle=new Nozzle();
                         nozzle=db.getSingleNozzle(cpn.getNozzleId());
                         pump=db.getSinglePump(cpn.getPumpId());
-                        errorMessage.concat("Pu: " + pump.getPumpName() +" And No: "+nozzle.getNozzleName()+ " Error: " + cpn.getMessage()+"\n");
+                        errorMessage+=pump.getPumpName() +" And "+nozzle.getNozzleName()+ " Error: " + cpn.getMessage()+"\n";
                     }
                 }
                 if(TextUtils.isEmpty(errorMessage) || (errorMessage.length()<=0)){
@@ -593,9 +630,12 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 ChoosenPumpAndNozzle cp=new ChoosenPumpAndNozzle();
                 ws=(WorkStatus) iterator.next();
 
+                //Pump data to Post online
                 cp.setUserId(ws.getUserId());
                 cp.setNozzleId(ws.getNozzleId());
                 cp.setPumpId(ws.getPumpId());
+                cp.setMessage(ws.getMessage());
+                cp.setStatus(ws.getStatusCode());
 
                 choosenPumpsList.add(cp);
             }

@@ -1,34 +1,84 @@
 package entities;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class SellingTransaction {
 	public SellingTransaction() {
 	}
 
+//    deviceTransactionId":"1",
+//            "deviceTransactionTime":"",
+//            "branchId":1,
+//            "userId":3,
+//            "deviceId":"dev1",
+//            "pumpId":1,
+//            "nozzleId":1,
+//            "productId":1,
+//            "paymentModeId":2,
+//            "amount":100,
+//            "quantity":5.5,
+//            "plateNumber":"RWA/2344",
+//            "name":"JOHN",
+//            "telephone":"250736255084",
+//            "tin":"160354",
+//            "voucherNumber":"643676347",
+//            "authenticationCode":100,
+//            "authorisationCode":100
 
-	 private int deviceTransactionId;
+    @JsonProperty("deviceTransactionId")
+	 private long deviceTransactionId;
+    @JsonProperty("userId")
 	 private int userId;
+    @JsonProperty("branchId")
 	 private int branchId;
+    @JsonProperty("nozzleId")
 	 private int nozzleId;
+    @JsonProperty("pumpId")
      private int pumpId;
-	 private int deviceNo;
+    @JsonProperty("deviceId")
+	 private String deviceNo;
+    @JsonProperty("productId")
 	 private int productId;
+    @JsonProperty("paymentModeId")
 	 private int paymentModeId;
+    @JsonProperty("amount")
 	 private Double amount;
+    @JsonProperty("quantity")
 	 private Double quantity;
+    @JsonProperty("plateNumber")
 	 private String plateNumber;
+    @JsonProperty("telephone")
 	 private String telephone;
+    @JsonProperty("name")
 	 private String name;
+    @JsonProperty("tin")
 	 private String tin;
+    @JsonProperty("voucherNumber")
 	 private String voucherNumber;
-	 private String authorisationCode;
+    @JsonProperty("deviceTransactionTime")
 	 private String deviceTransactionTime;
+    @JsonProperty("authorisationCode")
+    private String authorisationCode;
+    @JsonProperty("authenticationCode")
 	 private int authenticationCode;
+    @JsonIgnore
+     private int status;
 
+    public int getStatus() {
+        return status;
+    }
 
-    public int getDeviceTransactionId() {
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public long getDeviceTransactionId() {
         return deviceTransactionId;
     }
 
-    public void setDeviceTransactionId(int deviceTransactionId) {
+    public void setDeviceTransactionId(long deviceTransactionId) {
         this.deviceTransactionId = deviceTransactionId;
     }
 
@@ -56,11 +106,11 @@ public class SellingTransaction {
         this.nozzleId = nozzleId;
     }
 
-    public int getDeviceNo() {
+    public String getDeviceNo() {
         return deviceNo;
     }
 
-    public void setDeviceNo(int deviceNo) {
+    public void setDeviceNo(String deviceNo) {
         this.deviceNo = deviceNo;
     }
 
@@ -167,4 +217,5 @@ public class SellingTransaction {
     public void setPumpId(int pumpId) {
         this.pumpId = pumpId;
     }
+
 }

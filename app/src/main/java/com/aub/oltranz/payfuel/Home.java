@@ -191,9 +191,9 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                             logged = db.getSingleUser(logged.getUser_id());
                             userId = logged.getUser_id();
                             branchId = logged.getBranch_id();
-                            uiFeedBack("Success: " + userId);
+                            //uiFeedBack("Success: " + userId);
 
-                            //_______________Return him back to Sale Page_______________\\
+                            //_______________Return him back to Select pump_nozzles Page_______________\\
                             int pumpCount = db.getPumpCount();
                             if (pumpCount > 0) {
                                 int nozzleCount = db.getNozzleCount();
@@ -205,7 +205,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                             //loading payment
                                             // pause();
                                             if (loadPayment(this, userId)) {
-                                                // Redirect the use to sale page
+                                                // Redirect the user to select pump_nozzles page
                                                 showDialog("Logging In. Done...");
                                                 intent = new Intent(context, SelectPumps.class);
                                                 Bundle bundle = new Bundle();
@@ -216,13 +216,15 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                                 finish();
                                                 startActivity(intent);
                                             } else {
+                                                resetLogin();
                                                 uiFeedBack("Loading paymentMode failed: " + userId);
                                             }
                                         } else {
+                                            resetLogin();
                                             uiFeedBack("Loading pumps failed: " + userId);
                                         }
                                     } else {
-                                        //Sale page redirection
+                                        //Select pump_nozzles page redirection
                                                 // Redirect the use to sale page
                                                 showDialog("Logging In. Done...");
                                                 intent = new Intent(context, SellingTabHost.class);
@@ -236,9 +238,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 
                                     }
                                 } else {
+                                    resetLogin();
                                     uiFeedBack(getResources().getString(R.string.loginproblem));
                                 }
                             } else {
+                                resetLogin();
                                 uiFeedBack(getResources().getString(R.string.loginproblem));
                             }
 //                            //loading pumps if necessary
@@ -284,9 +288,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                         startActivity(intent);
 
                                     } else {
+                                        resetLogin();
                                         uiFeedBack("Loading paymentMode failed: " + userId);
                                     }
                                 } else {
+                                    resetLogin();
                                     uiFeedBack("Loading pumps failed: " + userId);
                                 }
                             }
@@ -303,6 +309,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                         long internalId = db.createUser(logged);
                         if (internalId <= 0) {
                             //when to register a user on local device failed
+                            resetLogin();
                             uiFeedBack(getResources().getString(R.string.loginproblem));
                         } else {
                             //when registering a user on local device succeeded
@@ -326,9 +333,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                     finish();
                                     startActivity(intent);
                                 } else {
+                                    resetLogin();
                                     uiFeedBack("Loading paymentMode failed: " + userId);
                                 }
                             } else {
+                                resetLogin();
                                 uiFeedBack("Loading pumps failed: " + userId);
                             }
                         }
@@ -336,9 +345,25 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 
                 }
             } else {
+                resetLogin();
                 uiFeedBack(getResources().getString(R.string.ambiguous));
             }
         }
+    }
+
+    //resetting the login when a bad login happens
+    public void resetLogin(){
+        long log=0;
+        //delete Work Status
+        db.deleteStatusByUser(userId);
+        //delete user
+
+        Logged_in_user user=new Logged_in_user();
+        user.setLogged(0);
+        log=db.updateUser(user);
+        Log.v(tag,"User log status 0: "+log);
+        db.deleteUser(userId);
+        db.deleteStatusByUser(userId);
     }
 
     @Override

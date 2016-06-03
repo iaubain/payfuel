@@ -8,7 +8,7 @@ public class AsyncTransaction {
     private int userId;
     private String deviceNo;
     private int branchId;
-    private int transactionId;
+    private long transactionId;
     private int sum;
 
 
@@ -36,11 +36,11 @@ public class AsyncTransaction {
         this.branchId = branchId;
     }
 
-    public int getTransactionId() {
+    public long getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(int transactionId) {
+    public void setTransactionId(long transactionId) {
         this.transactionId = transactionId;
     }
 

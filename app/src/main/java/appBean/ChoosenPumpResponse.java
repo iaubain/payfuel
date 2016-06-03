@@ -10,7 +10,7 @@ import models.ChoosenPumpAndNozzle;
  * Created by Owner on 5/13/2016.
  */
 public class ChoosenPumpResponse {
-    @JsonProperty("assignPumpModel")
+    @JsonProperty("AssignedPumpModel")
     private List<ChoosenPumpAndNozzle> assignPumpModel;
     @JsonProperty("message")
     private String message;
