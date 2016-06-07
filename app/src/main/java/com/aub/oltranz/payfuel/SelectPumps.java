@@ -11,6 +11,8 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -70,6 +72,9 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //go full screen
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_select_pumps);
 
         savedBundle =getIntent().getExtras();
@@ -121,7 +126,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     //Enable all UI element
     public void enableUI(){
         Log.d(tag, "Enable all UI Elements");
-        LinearLayout layout = (LinearLayout) findViewById(R.id.pumplayout);
+        RelativeLayout layout = (RelativeLayout) findViewById(R.id.pumplayout);
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             if(!child.isEnabled())
@@ -245,6 +250,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     public void loadNozzle(int userId, int pumpId, final View pumpView){
         Log.d(tag, "Load Nozzle and initiate Nozzle list view");
         dialog=new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_LEFT_ICON);
         dialog.setContentView(R.layout.nozzle_list);
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
@@ -254,7 +260,8 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='"+getResources().getColor(R.color.appcolor)+"'>Nozzle Status</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Nozzle Status</font>"));
+        dialog.setFeatureDrawableResource(Window.FEATURE_LEFT_ICON, R.drawable.pump_blue);
 
         nozzleListView =(ListView) dialog.findViewById(R.id.nozzlelist);
         Button finish=(Button) dialog.findViewById(R.id.nozzlefinish);

@@ -133,6 +133,9 @@ public class PrintHandler {
         thermalPrinter.setStep(4);
         thermalPrinter.print("Transaction: " + tp.getDeviceTransactionId() + "\n");
         thermalPrinter.print("Payment Method: " + tp.getPaymentMode() + "\n");
+        if(tp.getPaymentMode().equalsIgnoreCase("voucher")){
+            thermalPrinter.print("Voucher Number: " + tp.getVoucherNumber() + "\n");
+        }
         thermalPrinter.print("Payment Status: " + tp.getPaymentStatus() + "\n");
         thermalPrinter.print("Served Pump: " + tp.getPumpName() + "\n");
         thermalPrinter.print("Served Nozzle: " + tp.getNozzleName() + "\n");

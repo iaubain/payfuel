@@ -4,11 +4,16 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
     <ImageView
         android:id="@+id/nozzleicon"
-        android:layout_width="85dp"
-        android:layout_height="85dp"
-        android:padding="5dp" />
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:padding="2dp" />
 
     <LinearLayout android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nozzle Name"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="12sp"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
             android:padding="2dp"
@@ -28,12 +33,14 @@
             android:id="@+id/nozzleproduct"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="10sp"
             android:text="nozzleproduct"
             android:layout_marginLeft="10dp"/>
         <TextView
             android:id="@+id/index"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="10sp"
             android:text="Index: "
             android:layout_marginLeft="10dp"/>
 
@@ -41,26 +48,35 @@
             android:id="@+id/nozzleindicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="10sp"
             android:text="indicator"
+            android:visibility="gone"
             android:layout_marginLeft="10dp"/>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#33CC33"
-                android:text="V"
-                android:id="@+id/accept" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#ff0000"
-                android:text="X"
-                android:id="@+id/refuse" />
-        </TableRow>
     </LinearLayout>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="2dp"
+        android:gravity="left">
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="4dp"
+            android:textColor="@color/positive"
+            android:text="Ѵ"
+            android:background="@drawable/border_green"
+            android:id="@+id/accept" />
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:textColor="@color/error"
+            android:text="X"
+            android:background="@drawable/border_red"
+            android:id="@+id/refuse" />
+    </TableRow>
+    </TableRow>
 </LinearLayout>

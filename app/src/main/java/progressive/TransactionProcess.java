@@ -88,32 +88,40 @@ public class TransactionProcess implements HandleUrlInterface {
         try{
             if((object.getClass().getSimpleName().equalsIgnoreCase("TransactionResponse"))&&(object!=null)){
                 TransactionResponse tr=(TransactionResponse) object;
-                if(tr.getStatusCode()==301){
-                    Log.d(tag,"A pending transaction: "+tr.getSellingTransaction().getDeviceTransactionId());
-                    SellingTransaction st=tr.getSellingTransaction();
-                    AsyncTransaction at=new AsyncTransaction();
-                    at.setSum(0);
-                    at.setDeviceNo(st.getDeviceNo());
-                    at.setUserId(st.getUserId());
-                    at.setBranchId(st.getBranchId());
-                    at.setTransactionId(st.getDeviceTransactionId());
 
-                    long dbId=db.createAsyncTransaction(at);
-                    if(dbId<=0){
-                        tfi.feedsMessage("Pending transaction Failed to be Recorded:"+st.getDeviceTransactionId());
-                    }
-                }else if(tr.getStatusCode()==100){
-                    SellingTransaction st=tr.getSellingTransaction();
-                    PaymentMode pm=db.getSinglePaymentMode(st.getPaymentModeId());
-                    if(!pm.getName().equalsIgnoreCase("cash")){
-                        Nozzle nozzle=new Nozzle();
-                        nozzle=db.getSingleNozzle(st.getNozzleId());
-                        incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
-                    }
-                }else if(tr.getStatusCode()==500){
+                //_________Draft______\\
+                if(tr.getStatusCode()==500){
                     SellingTransaction st=tr.getSellingTransaction();
                     long dbId=db.updateTransaction(st);
                 }
+                //________End Draft_____\\
+
+//                if(tr.getStatusCode()==301){
+//                    Log.d(tag,"A pending transaction: "+tr.getSellingTransaction().getDeviceTransactionId());
+//                    SellingTransaction st=tr.getSellingTransaction();
+//                    AsyncTransaction at=new AsyncTransaction();
+//                    at.setSum(0);
+//                    at.setDeviceNo(st.getDeviceNo());
+//                    at.setUserId(st.getUserId());
+//                    at.setBranchId(st.getBranchId());
+//                    at.setTransactionId(st.getDeviceTransactionId());
+//
+//                    long dbId=db.createAsyncTransaction(at);
+//                    if(dbId<=0){
+//                        tfi.feedsMessage("Pending transaction Failed to be Recorded:"+st.getDeviceTransactionId());
+//                    }
+//                }else if(tr.getStatusCode()==100){
+//                    SellingTransaction st=tr.getSellingTransaction();
+//                    PaymentMode pm=db.getSinglePaymentMode(st.getPaymentModeId());
+//                    if(!pm.getName().equalsIgnoreCase("cash") && !pm.getName().equalsIgnoreCase("debt")){
+//                        Nozzle nozzle=new Nozzle();
+//                        nozzle=db.getSingleNozzle(st.getNozzleId());
+//                        incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
+//                    }
+//                }else if(tr.getStatusCode()==500){
+//                    SellingTransaction st=tr.getSellingTransaction();
+//                    long dbId=db.updateTransaction(st);
+//                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -137,8 +145,31 @@ public class TransactionProcess implements HandleUrlInterface {
 
         PaymentMode pm=db.getSinglePaymentMode(st.getPaymentModeId());
 
-        //if payment mode equals cash
-        if(pm.getName().equalsIgnoreCase("cash")){
+//        //if payment mode equals cash
+//        if(pm.getName().equalsIgnoreCase("cash") || pm.getName().equalsIgnoreCase("debt") || pm.getName().equalsIgnoreCase("SP CARD")){
+//            st.setStatus(100);
+//            long transactonId=db.createTransaction(st);
+//            if(transactionId<=0){
+//                tfi.feedsMessage(context.getResources().getString(R.string.faillurenotification));
+//                return;
+//            }
+//
+//            Nozzle nozzle=new Nozzle();
+//            nozzle=db.getSingleNozzle(st.getNozzleId());
+//            incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
+//            st=db.getSingleTransaction(st.getDeviceTransactionId());
+//        }else{
+//            st.setStatus(301);
+//            long transactonId=db.createTransaction(st);
+//            if(transactionId<=0){
+//                tfi.feedsMessage(context.getResources().getString(R.string.faillurenotification));
+//                return;
+//            }
+//
+//            st=db.getSingleTransaction(st.getDeviceTransactionId());
+//        }
+
+
             st.setStatus(100);
             long transactonId=db.createTransaction(st);
             if(transactionId<=0){
@@ -150,16 +181,7 @@ public class TransactionProcess implements HandleUrlInterface {
             nozzle=db.getSingleNozzle(st.getNozzleId());
             incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
             st=db.getSingleTransaction(st.getDeviceTransactionId());
-        }else{
-            st.setStatus(301);
-            long transactonId=db.createTransaction(st);
-            if(transactionId<=0){
-                tfi.feedsMessage(context.getResources().getString(R.string.faillurenotification));
-                return;
-            }
 
-            st=db.getSingleTransaction(st.getDeviceTransactionId());
-        }
 
         //sending a transaction Online
         mc=new MapperClass();

@@ -11,6 +11,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -59,6 +61,9 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //go full screen
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_home);
 
         //initialize activity UI
@@ -103,7 +108,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
         // db.truncateUser();
         Log.d(tag, "Login Process");
         //launchBarDialog(v);
-        showDialog("Logging In. Please wait...");
+       // showDialog("Logging In. Please wait...");
         String data = pin.getText().toString();
 
         if (TextUtils.isEmpty(data)) {
@@ -206,7 +211,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                             // pause();
                                             if (loadPayment(this, userId)) {
                                                 // Redirect the user to select pump_nozzles page
-                                                showDialog("Logging In. Done...");
+                                               // showDialog("Logging In. Done...");
                                                 intent = new Intent(context, SelectPumps.class);
                                                 Bundle bundle = new Bundle();
                                                 bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -226,7 +231,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                     } else {
                                         //Select pump_nozzles page redirection
                                                 // Redirect the use to sale page
-                                                showDialog("Logging In. Done...");
+                                               // showDialog("Logging In. Done...");
                                                 intent = new Intent(context, SellingTabHost.class);
                                                 Bundle bundle = new Bundle();
                                                 bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -277,7 +282,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                     // pause();
                                     if (loadPayment(this, userId)) {
                                         // Redirect the use to sale page
-                                        showDialog("Logging In. Done...");
+                                       // showDialog("Logging In. Done...");
                                         intent = new Intent(context, SelectPumps.class);
                                         Bundle bundle = new Bundle();
                                         bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -323,7 +328,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                 // pause();
                                 if (loadPayment(this, userId)) {
                                     // Redirect the use to sale page
-                                    showDialog("Logging In. Done...");
+                                   // showDialog("Logging In. Done...");
                                     intent = new Intent(context, SelectPumps.class);
                                     Bundle bundle = new Bundle();
                                     bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -414,7 +419,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
     }
 
     public boolean loadPumps(Context context, int userId) {
-        updateDialog("Logging In. Loading pumps...");
+       // updateDialog("Logging In. Loading pumps...");
         lp = new LoadPumps();
         return lp.fetchPump(context, userId);
 
@@ -460,7 +465,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
     }
 
     public boolean loadPayment(Context context, int userId) {
-        updateDialog("Logging In. Loading payment Modes...");
+       // updateDialog("Logging In. Loading payment Modes...");
         lpm = new LoadPaymentMode();
         return lpm.fetchPump(context, userId);
 

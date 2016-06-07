@@ -7,6 +7,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -25,7 +27,7 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
 
     String tag="PayFuel: "+getClass().getSimpleName();
     TextView tv;
-    EditText userName, password,devName;
+    EditText userName, password,devName,reDevName;
     Button reg;
     String devRegUrl, deviceSerial,deviceName;
     Context context;
@@ -39,6 +41,9 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //go full screen
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_register_device);
         Log.d(tag,"DeviceRegistration Activity Created");
         //initialize UI
@@ -54,6 +59,7 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
         userName=(EditText) findViewById(R.id.username);
         password=(EditText) findViewById(R.id.pw);
         devName=(EditText) findViewById(R.id.devname);
+        reDevName=(EditText) findViewById(R.id.retypedevname);
         context=getApplicationContext();
     }
 
@@ -68,19 +74,25 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     public void register(View v){
         Log.d(tag, "Register Device Process");
         if((!userName.getText().toString().equalsIgnoreCase(""))&&(!password.getText().toString().equalsIgnoreCase(""))&&(!devName.getText().toString().equalsIgnoreCase(""))){
-            deviceName=devName.getText().toString();
+            if(reDevName.getText().toString().equals(devName.getText().toString())){
+                deviceName=devName.getText().toString();
 
-            DeviceBean devBean=new DeviceBean();
-            devBean.setDeviceId(devName.getText().toString());
-            devBean.setEmail(userName.getText().toString());
-            devBean.setPassword(password.getText().toString());
+                DeviceBean devBean=new DeviceBean();
+                devBean.setDeviceId(devName.getText().toString());
+                devBean.setEmail(userName.getText().toString());
+                devBean.setPassword(password.getText().toString());
 
-            //disabling the UI
-            disableUI();
+                //disabling the UI
+                disableUI();
 
-            String jsonData=mapper.mapping(devBean);
-            hu=new HandleUrl(this,context,getResources().getString(R.string.registerdeviceurl),getResources().getString(R.string.post),jsonData);
-       }
+                String jsonData=mapper.mapping(devBean);
+                hu=new HandleUrl(this,context,getResources().getString(R.string.registerdeviceurl),getResources().getString(R.string.post),jsonData);
+            }else{
+                uiFeedBack(getResources().getString(R.string.invaliddata));
+            }
+       }else{
+            uiFeedBack(getResources().getString(R.string.invaliddata));
+        }
     }
     //Return a message to the user
     public void uiFeedBack(String message){
@@ -138,7 +150,7 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     //Disabling all UI element
     public void disableUI(){
         Log.d(tag,"Disable all UI Elements");
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.reglayout);
+        LinearLayout layout = (LinearLayout) findViewById(R.id.reglayout);
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             if(child.isEnabled())
@@ -149,7 +161,7 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     //Enable all UI element
     public void enableUI(){
         Log.d(tag,"Enable all UI Elements");
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.reglayout);
+        LinearLayout layout = (LinearLayout) findViewById(R.id.reglayout);
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             if(!child.isEnabled())

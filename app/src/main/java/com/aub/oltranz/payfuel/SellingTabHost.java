@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +48,10 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //go full screen
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_selling_tab_host);
 
         savedBundle =getIntent().getExtras();

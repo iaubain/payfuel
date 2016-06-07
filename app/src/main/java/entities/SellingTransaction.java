@@ -8,25 +8,6 @@ public class SellingTransaction {
 	public SellingTransaction() {
 	}
 
-//    deviceTransactionId":"1",
-//            "deviceTransactionTime":"",
-//            "branchId":1,
-//            "userId":3,
-//            "deviceId":"dev1",
-//            "pumpId":1,
-//            "nozzleId":1,
-//            "productId":1,
-//            "paymentModeId":2,
-//            "amount":100,
-//            "quantity":5.5,
-//            "plateNumber":"RWA/2344",
-//            "name":"JOHN",
-//            "telephone":"250736255084",
-//            "tin":"160354",
-//            "voucherNumber":"643676347",
-//            "authenticationCode":100,
-//            "authorisationCode":100
-
     @JsonProperty("deviceTransactionId")
 	 private long deviceTransactionId;
     @JsonProperty("userId")

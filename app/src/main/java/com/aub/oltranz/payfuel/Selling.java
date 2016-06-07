@@ -229,7 +229,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='#012c92'>Amount and Quantity</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Amount and Quantity</font>"));
 
         final Button pay=(Button) dialog.findViewById(R.id.pay);
         final Button cancel=(Button) dialog.findViewById(R.id.cancel);
@@ -239,9 +239,9 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 
         final EditText amnt=(EditText) dialog.findViewById(R.id.amnt);
         final EditText qty=(EditText) dialog.findViewById(R.id.qty);
-        final EditText platenumber=(EditText) dialog.findViewById(R.id.platenumber);
-        platenumber.setAllCaps(true);
-        platenumber.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
+        final EditText plateNumber=(EditText) dialog.findViewById(R.id.platenumber);
+        plateNumber.setAllCaps(true);
+        plateNumber.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
         final EditText tin=(EditText) dialog.findViewById(R.id.tin);
         final EditText companyName=(EditText) dialog.findViewById(R.id.name);
 
@@ -262,14 +262,24 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 double amount=0;
 
                 //check length of text box
+                int textLength=amnt.getText().toString().length();
+                if(textLength>=7 && textLength%2==0){
+                    float textSize=amnt.getTextSize();
+                    if(textSize>=12)
+                        amnt.setTextSize(textSize+2);
+                }
+
+                //check length of text box
                 if(amnt.getText().toString().length()<=6)
-                    amnt.setTextSize(30);
-                else if(amnt.getText().toString().length()==6)
                     amnt.setTextSize(20);
-                else if(amnt.getText().toString().length()==7)
+                else if(amnt.getText().toString().length()==8)
                     amnt.setTextSize(18);
-                else if(amnt.getText().toString().length()>=8)
-                    amnt.setTextSize(15);
+                else if(amnt.getText().toString().length()>=10)
+                    amnt.setTextSize(16);
+                else if(amnt.getText().toString().length()>=12)
+                    amnt.setTextSize(14);
+                else if(amnt.getText().toString().length()>=14)
+                    amnt.setTextSize(12);
 
                 try{
 
@@ -313,13 +323,15 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 
                 //check length of text box
                 if(qty.getText().toString().length()<=6)
-                    qty.setTextSize(30);
-                else if(qty.getText().toString().length()==6)
                     qty.setTextSize(20);
-                else if(qty.getText().toString().length()==7)
+                else if(qty.getText().toString().length()==8)
                     qty.setTextSize(18);
-                else if(qty.getText().toString().length()>=8)
-                    qty.setTextSize(15);
+                else if(qty.getText().toString().length()>=10)
+                    qty.setTextSize(16);
+                else if(qty.getText().toString().length()>=12)
+                    qty.setTextSize(14);
+                else if(qty.getText().toString().length()>=14)
+                    qty.setTextSize(12);
 
                 try{
 
@@ -353,13 +365,13 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             @Override
             public void onClick(View view) {
                 //check compulsory fields AMOUNT and QUANTITY
-                if(!TextUtils.isEmpty(amnt.getText().toString())&&(!TextUtils.isEmpty(qty.getText().toString()))&&(!TextUtils.isEmpty(platenumber.getText().toString()))){
+                if(!TextUtils.isEmpty(amnt.getText().toString())&&(!TextUtils.isEmpty(qty.getText().toString()))){
                     transValue.setAmnt(Double.parseDouble(amnt.getText().toString()));
                     transValue.setQty(Double.parseDouble(qty.getText().toString()));
 
                     //verify the plate number
-                    if(!TextUtils.isEmpty(platenumber.getText().toString())){
-                        transValue.setPlateNumber(platenumber.getText().toString());
+                    if(!TextUtils.isEmpty(plateNumber.getText().toString())){
+                        transValue.setPlateNumber(plateNumber.getText().toString());
                     }else{
                         transValue.setPlateNumber("N/A");
                     }
@@ -400,17 +412,17 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             @Override
             public void onClick(View view) {
 
-                if(!tin.isShown())
+                if (!tin.isShown())
                     tin.setVisibility(View.VISIBLE);
                 else
                     tin.setVisibility(View.GONE);
 
-                if(!companyName.isShown())
+                if (!companyName.isShown())
                     companyName.setVisibility(View.VISIBLE);
                 else
                     companyName.setVisibility(View.GONE);
 
-                if(what.getText().toString().equalsIgnoreCase("Company?"))
+                if (what.getText().toString().equalsIgnoreCase("Company?"))
                     what.setText("^hide^");
                 else
                     what.setText("Company?");
@@ -437,7 +449,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='#012c92'>Payment Modes</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Payment Modes</font>"));
 
         final Button cancel=(Button) dialog.findViewById(R.id.cancel);
         final GridView paymentGrid=(GridView) dialog.findViewById(R.id.paymentlist);
@@ -454,7 +466,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     //check type of payment to put extra value
 
                     //push value to next Popup CONFIRM
-                    if(((TextView) view.findViewById(R.id.pname)).getText().toString().equalsIgnoreCase("cash"))
+                    if(((TextView) view.findViewById(R.id.pname)).getText().toString().equalsIgnoreCase("cash")||((TextView) view.findViewById(R.id.pname)).getText().toString().equalsIgnoreCase("debt"))
                         setConfirm(pumpDetails, transValue, payDetails);
                     else
                         setExtra(pumpDetails, transValue, payDetails);
@@ -495,7 +507,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 View divider = dialog.findViewById(dividerId);
                 divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
             }
-            dialog.setTitle(Html.fromHtml("<font color='#012c92'>Fill the Number</font>"));
+            dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Fill the Number</font>"));
             final TextView tv=(TextView) dialog.findViewById(R.id.tv);
             final EditText tel=(EditText) dialog.findViewById(R.id.tel);
             Button done=(Button) dialog.findViewById(R.id.done);
@@ -531,6 +543,46 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     setPaymentMode(pumpDetails,transValue);
                 }
             });
+        }else if(paymentMode.getName().equalsIgnoreCase("voucher")){
+            dialog.setContentView(R.layout.extra_layout);
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+
+            int dividerId = dialog.getContext().getResources().getIdentifier("android:id/titleDivider", null, null);
+            if (dividerId != 0) {
+                View divider = dialog.findViewById(dividerId);
+                divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
+            }
+            dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Fill The Card Number</font>"));
+            final TextView tv=(TextView) dialog.findViewById(R.id.tv);
+            final EditText tel=(EditText) dialog.findViewById(R.id.tel);
+            final EditText plateNumber=(EditText) dialog.findViewById(R.id.platenumber);
+            plateNumber.setAllCaps(true);
+            plateNumber.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
+            Button done=(Button) dialog.findViewById(R.id.done);
+            Button cancel=(Button) dialog.findViewById(R.id.cancel);
+
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(tel.getText().toString().length()<=0 || plateNumber.getText().toString().length()<=0){
+                        tv.setText("Invalid Card number");
+                    }else{
+                        payDetails.setVoucher(tel.getText().toString());
+                        transValue.setPlateNumber(plateNumber.getText().toString());
+                        setConfirm(pumpDetails, transValue, payDetails);
+                    }
+                }
+            });
+
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    setPaymentMode(pumpDetails,transValue);
+                }
+            });
+        }else{
+            setConfirm(pumpDetails, transValue, payDetails);
         }
 
 
@@ -552,7 +604,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='#012c92'>Confirm Transaction</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Confirm Transaction</font>"));
 
         final Button cancel=(Button) dialog.findViewById(R.id.cancel);
         final Button accept=(Button) dialog.findViewById(R.id.done);
@@ -645,7 +697,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='#012c92'>Receipt Generator</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Receipt Generator</font>"));
 
         final Button yes=(Button) dialog.findViewById(R.id.yes);
         final Button no=(Button) dialog.findViewById(R.id.no);
@@ -653,80 +705,95 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
         yes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                yes.setEnabled(false);
+                yes.setClickable(false);
+                no.setEnabled(false);
+                no.setClickable(false);
+
                 receipt=true;
                 resetValue();
-                SellingTransaction st=db.getSingleTransaction(transactionId);
-                dialog.dismiss();
-                try{
-                    if(st.getStatus()==100){
+                final SellingTransaction st=db.getSingleTransaction(transactionId);
 
-                        TransactionPrint tp=new TransactionPrint();
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.v(tag,"Running a printing thread");
+                        try{
+                            if(st.getStatus()==100){
 
-                        tp.setAmount(st.getAmount());
-                        tp.setQuantity(st.getQuantity());
-                        tp.setBranchName(db.getSingleUser(userId).getBranch_name());
-                        tp.setDeviceId(db.getSingleDevice().getDeviceNo());
-                        tp.setUserName(db.getSingleUser(userId).getName());
-                        tp.setDeviceTransactionId(String.valueOf(transactionId));
-                        tp.setDeviceTransactionTime(st.getDeviceTransactionTime());
-                        tp.setNozzleName(db.getSingleNozzle(st.getNozzleId()).getNozzleName());
-                        tp.setPaymentMode(db.getSinglePaymentMode(st.getPaymentModeId()).getName());
+                                TransactionPrint tp=new TransactionPrint();
 
-                        if(st.getPlateNumber()!=null)
-                            tp.setPlateNumber(st.getPlateNumber());
-                        else
-                            tp.setPlateNumber("N/A");
+                                tp.setAmount(st.getAmount());
+                                tp.setQuantity(st.getQuantity());
+                                tp.setBranchName(db.getSingleUser(userId).getBranch_name());
+                                tp.setDeviceId(db.getSingleDevice().getDeviceNo());
+                                tp.setUserName(db.getSingleUser(userId).getName());
+                                tp.setDeviceTransactionId(String.valueOf(transactionId));
+                                tp.setDeviceTransactionTime(st.getDeviceTransactionTime());
+                                tp.setNozzleName(db.getSingleNozzle(st.getNozzleId()).getNozzleName());
+                                tp.setPaymentMode(db.getSinglePaymentMode(st.getPaymentModeId()).getName());
 
-                        tp.setProductName(db.getSingleNozzle(st.getNozzleId()).getProductName());
-                        tp.setPumpName(db.getSinglePump(st.getPumpId()).getPumpName());
+                                if(st.getPlateNumber()!=null)
+                                    tp.setPlateNumber(st.getPlateNumber());
+                                else
+                                    tp.setPlateNumber("N/A");
 
-                        if(st.getTelephone()!=null)
-                            tp.setTelephone(st.getTelephone());
-                        else
-                            tp.setTelephone("N/A");
+                                tp.setProductName(db.getSingleNozzle(st.getNozzleId()).getProductName());
+                                tp.setPumpName(db.getSinglePump(st.getPumpId()).getPumpName());
 
-                        if(st.getTin()!=null)
-                            tp.setTin(st.getTin());
-                        else
-                            tp.setTin("N/A");
+                                if(st.getTelephone()!=null)
+                                    tp.setTelephone(st.getTelephone());
+                                else
+                                    tp.setTelephone("N/A");
 
-                        if(st.getVoucherNumber()!=null)
-                            tp.setVoucherNumber(st.getVoucherNumber());
-                        else
-                            tp.setVoucherNumber("N/A");
+                                if(st.getTin()!=null)
+                                    tp.setTin(st.getTin());
+                                else
+                                    tp.setTin("N/A");
 
-                        if(st.getName()!=null)
-                            tp.setCompanyName(st.getName());
-                        else
-                            tp.setCompanyName("N/A");
+                                if(st.getVoucherNumber()!=null)
+                                    tp.setVoucherNumber(st.getVoucherNumber());
+                                else
+                                    tp.setVoucherNumber("N/A");
 
-                        if(st.getStatus()==100 || st.getStatus()==101){
-                            tp.setPaymentStatus("Success");
-                            //launch printing procedure
-                            PrintHandler ph=new PrintHandler(context,tp);
-                            String print=ph.transPrint();
-                            if(!print.equalsIgnoreCase("Success")){
-                                uiFeedBack(print);
-                            }
-                        }else{
-                            //Update the status to generate the the print out finally
-                            if(st.getStatus()!=500){
-                                st.setStatus(st.getStatus()+1);
+                                if(st.getName()!=null)
+                                    tp.setCompanyName(st.getName());
+                                else
+                                    tp.setCompanyName("N/A");
 
-                                long dbId=db.updateTransaction(st);
-                                if(dbId<=0){
-                                    uiFeedBack("Failed to generate receipt");
+                                if(st.getStatus()==100 || st.getStatus()==101){
+                                    tp.setPaymentStatus("Success");
+                                    //launch printing procedure
+                                    PrintHandler ph=new PrintHandler(context,tp);
+                                    String print=ph.transPrint();
+                                    if(!print.equalsIgnoreCase("Success")){
+                                        uiFeedBack(print);
+                                    }
+                                }else{
+                                    //Update the status to generate the the print out finally
+                                    if(st.getStatus()!=500){
+                                        st.setStatus(st.getStatus()+1);
+
+                                        long dbId=db.updateTransaction(st);
+                                        if(dbId<=0){
+                                            uiFeedBack("Failed to generate receipt");
+                                        }
+                                    }
                                 }
                             }
+                        }catch (Exception e){
+                            uiFeedBack(e.getMessage());
+                            e.printStackTrace();
                         }
                     }
-                }catch (Exception e){
-                    uiFeedBack(e.getMessage());
-                   e.printStackTrace();
-                }
+                };
+                new Thread(runnable).start();
+
 
                 //initialize activity UI
                 initAppUI();
+
+                dialog.dismiss();
             }
         });
 

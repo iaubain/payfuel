@@ -77,7 +77,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
         View rowView=inflater.inflate(R.layout.nozzle_list_style, null, true);
 
         TextView nozzleName = (TextView) rowView.findViewById(R.id.nozzlename);
-        final ImageView imageView = (ImageView) rowView.findViewById(R.id.nozzleicon);
+        final ImageView nozzleIcon = (ImageView) rowView.findViewById(R.id.nozzleicon);
         TextView index = (TextView) rowView.findViewById(R.id.index);
         TextView product = (TextView) rowView.findViewById(R.id.nozzleproduct);
         final TextView label = (TextView) rowView.findViewById(R.id.nozzleindicator);
@@ -85,13 +85,14 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
         final TextView pumpLabel=(TextView) pumpView.findViewById(R.id.indicator);
         final ImageView pumpImg=(ImageView) pumpView.findViewById(R.id.icon);
 
-        Button refuse=(Button) rowView.findViewById(R.id.refuse);
-        Button accept=(Button) rowView.findViewById(R.id.accept);
+        final Button refuse=(Button) rowView.findViewById(R.id.refuse);
+        final Button accept=(Button) rowView.findViewById(R.id.accept);
 
         final Nozzle nozzle=nozzles.get(position);
 
         //When a nozzle was already taken
         if(nozzle.getStatusCode()==8){
+            nozzleIcon.setImageResource(R.drawable.nozzleinactive);
             nozzleName.setText("Taken by:"+nozzle.getUserName());
             accept.setEnabled(false);
             accept.setClickable(false);
@@ -117,27 +118,41 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     //when nozzle was selected
                     label.setTextColor(context.getResources().getColor(R.color.rdcolor));
                     label.setText("Accepted");
-                    imageView.setImageResource(R.drawable.nozzle_green);
+                    nozzleIcon.setImageResource(R.drawable.nozzle_green);
+
+                    refuse.setTextColor(context.getResources().getColor(R.color.error));
+                    refuse.setBackground(context.getResources().getDrawable(R.drawable.border_red));
+
+                    accept.setTextColor(context.getResources().getColor(R.color.white));
+                    accept.setBackground(context.getResources().getDrawable(R.drawable.bckgreen));
+
                 }else if(ws.getStatusCode()==0){
                     //when nozzle was denied
                     label.setTextColor(context.getResources().getColor(R.color.error));
                     label.setText("Denied");
-                    imageView.setImageResource(R.drawable.nozzle_red);
+                    nozzleIcon.setImageResource(R.drawable.nozzle_red);
+
+                    refuse.setTextColor(context.getResources().getColor(R.color.white));
+                    refuse.setBackground(context.getResources().getDrawable(R.drawable.bckred));
+
+                    accept.setTextColor(context.getResources().getColor(R.color.positive));
+                    accept.setBackground(context.getResources().getDrawable(R.drawable.border_green));
+
                 }else{
                     //when no status was found
                     label.setText("Available to Choose");
-                    imageView.setImageResource(R.drawable.nozzle_blue);
+                    nozzleIcon.setImageResource(R.drawable.nozzle_blue);
                 }
-            }else{
+            }else if (nozzle.getStatusCode() != 8){
                 //When no status was not found
                 label.setText("Available to Choose");
-                imageView.setImageResource(R.drawable.nozzle_blue);
+                nozzleIcon.setImageResource(R.drawable.nozzle_blue);
             }
 
-        }else{
+        }else if (nozzle.getStatusCode() != 8){
             //when nothing was selected before
             label.setText("Available to Choose");
-            imageView.setImageResource(R.drawable.nozzle_blue);
+            nozzleIcon.setImageResource(R.drawable.nozzle_blue);
         }
 
 
@@ -145,6 +160,11 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
             @Override
             public void onClick(View view) {
                 Log.d(tag, "Refused: " + nozzle.getNozzleId());
+                refuse.setTextColor(context.getResources().getColor(R.color.white));
+                refuse.setBackground(context.getResources().getDrawable(R.drawable.bckred));
+
+                accept.setTextColor(context.getResources().getColor(R.color.positive));
+                accept.setBackground(context.getResources().getDrawable(R.drawable.border_green));
                 WorkStatus ws;
                 int statusCount=db.getStatusCountByUserAndPump(userId,nozzle.getNozzleId());
                 if(statusCount<=0){
@@ -158,11 +178,11 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     if(dbId > 0){
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Denied");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Error Choosing");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
                 }else if(statusCount > 0){
                     ws=new WorkStatus();
@@ -173,16 +193,16 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     if(dbId > 0){
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Denied");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Error Choosing");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
                 }else{
                     label.setTextColor(context.getResources().getColor(R.color.error));
                     label.setText("Status Error");
-                    imageView.setImageResource(R.drawable.nozzle_red);
+                    nozzleIcon.setImageResource(R.drawable.nozzle_red);
                 }
 
             }
@@ -192,6 +212,11 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
             @Override
             public void onClick(View view) {
                 Log.d(tag, "Accepted: " + nozzle.getNozzleId());
+                refuse.setTextColor(context.getResources().getColor(R.color.error));
+                refuse.setBackground(context.getResources().getDrawable(R.drawable.border_red));
+
+                accept.setTextColor(context.getResources().getColor(R.color.white));
+                accept.setBackground(context.getResources().getDrawable(R.drawable.bckgreen));
                 WorkStatus ws;
                 int statusCount=db.getStatusCountByUserAndPump(userId,nozzle.getNozzleId());
                 if(statusCount<=0){
@@ -205,11 +230,11 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     if(dbId > 0){
                         label.setTextColor(context.getResources().getColor(R.color.rdcolor));
                         label.setText("Accepted");
-                        imageView.setImageResource(R.drawable.nozzle_green);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_green);
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Error Choosing");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
                 }else if(statusCount > 0){
                     ws=new WorkStatus();
@@ -220,16 +245,16 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     if(dbId > 0){
                         label.setTextColor(context.getResources().getColor(R.color.rdcolor));
                         label.setText("Accepted");
-                        imageView.setImageResource(R.drawable.nozzle_green);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_green);
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
                         label.setText("Error Choosing");
-                        imageView.setImageResource(R.drawable.nozzle_red);
+                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
                 }else{
                     label.setTextColor(context.getResources().getColor(R.color.error));
                     label.setText("Status Error");
-                    imageView.setImageResource(R.drawable.nozzle_red);
+                    nozzleIcon.setImageResource(R.drawable.nozzle_red);
                 }
 
             }
