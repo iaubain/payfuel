@@ -432,8 +432,6 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
         dialog.show();
     }
 
-    public void setTinAndName(){}
-
     public void setPaymentMode(final PumpDetails pumpDetails, final TransValue transValue){
         Log.d(tag, "Setting payment mode");
         if(dialog.isShowing()){
@@ -566,7 +564,11 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 @Override
                 public void onClick(View view) {
                     if(tel.getText().toString().length()<=0 || plateNumber.getText().toString().length()<=0){
-                        tv.setText("Invalid Card number");
+                        //tv.setText("Invalid Card number");
+                        //Remove the N/A values once on real envirnment
+                        payDetails.setVoucher("123");
+                        transValue.setPlateNumber("N/A");
+                        setConfirm(pumpDetails, transValue, payDetails);
                     }else{
                         payDetails.setVoucher(tel.getText().toString());
                         transValue.setPlateNumber(plateNumber.getText().toString());
@@ -719,7 +721,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     public void run() {
                         Log.v(tag,"Running a printing thread");
                         try{
-                            if(st.getStatus()==100){
+                            if(st.getStatus()==100 || st.getStatus()==101){
 
                                 TransactionPrint tp=new TransactionPrint();
 
@@ -780,6 +782,11 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                                         }
                                     }
                                 }
+                            }else if(st.getStatus()==301){
+                                st.setStatus(302);
+                                long dbId=db.updateTransaction(st);
+                                if(dbId <=0)
+                                    uiFeedBack("Failed to generate receipt: "+transactionId);
                             }
                         }catch (Exception e){
                             uiFeedBack(e.getMessage());

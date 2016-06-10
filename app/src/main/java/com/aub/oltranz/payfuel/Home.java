@@ -222,11 +222,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                                 startActivity(intent);
                                             } else {
                                                 resetLogin();
-                                                uiFeedBack("Loading paymentMode failed: " + userId);
+                                                uiFeedBack("Loading paymentMode failed");
                                             }
                                         } else {
                                             resetLogin();
-                                            uiFeedBack("Loading pumps failed: " + userId);
+                                            uiFeedBack("Loading pumps failed");
                                         }
                                     } else {
                                         //Select pump_nozzles page redirection
@@ -294,11 +294,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 
                                     } else {
                                         resetLogin();
-                                        uiFeedBack("Loading paymentMode failed: " + userId);
+                                        uiFeedBack("Loading paymentMode failed");
                                     }
                                 } else {
                                     resetLogin();
-                                    uiFeedBack("Loading pumps failed: " + userId);
+                                    uiFeedBack("Loading pumps failed");
                                 }
                             }
                         }
@@ -339,11 +339,11 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                     startActivity(intent);
                                 } else {
                                     resetLogin();
-                                    uiFeedBack("Loading paymentMode failed: " + userId);
+                                    uiFeedBack("Loading paymentMode failed");
                                 }
                             } else {
                                 resetLogin();
-                                uiFeedBack("Loading pumps failed: " + userId);
+                                uiFeedBack("Loading pumps failed");
                             }
                         }
                     }

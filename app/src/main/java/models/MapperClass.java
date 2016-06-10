@@ -83,7 +83,7 @@ public class MapperClass {
 
         //Loading Pumps
         else if(urlResult.contains("\"PumpDetailsModel\"")){
-            Log.d(tag,"Response redirected to PumpDetailsModel");
+            Log.d(tag,"Response redirected to LoadPumpsResponse");
             mapper= new ObjectMapper();
 
             mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);

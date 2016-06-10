@@ -84,6 +84,7 @@ public class LoadPumps implements HandleUrlInterface {
                                     nozzle.setNozzleIndex(urlNozzles.getNozzleIndex());
                                     nozzle.setNozzleId(urlNozzles.getNozzleId());
                                     nozzle.setProductId(urlNozzles.getProductId());
+                                    nozzle.setStatusCode(urlNozzles.getStatus());
                                     nozzle.setProductName(urlNozzles.getProductName());
                                     nozzle.setUserName(urlNozzles.getUserName());
 

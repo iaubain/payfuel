@@ -508,6 +508,47 @@ public class DBHelper extends SQLiteOpenHelper {
         // return count
         return count;
     }
+    /**
+     * getting pending transaction count per user
+     */
+    public int getTransactionCountPending(long u_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String countQuery = "SELECT  * FROM " + transactionTable+ " WHERE " + userId + " = " + String.valueOf(u_id)+" AND "+status+" = 301 OR "+status+" = 302";
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    /**
+     * getting pending transaction count per user
+     */
+    public int getTransactionCountCancelled(long u_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String countQuery = "SELECT  * FROM " + transactionTable+ " WHERE " + userId + " = " + String.valueOf(u_id)+" AND "+status+" = 500";
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    /**
+     * getting pending transaction count per user
+     */
+    public int getTransactionCountSucceeded(long u_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String countQuery = "SELECT  * FROM " + transactionTable+ " WHERE " + userId + " = " + String.valueOf(u_id)+" AND "+status+" = 100 OR "+status+" = 101";
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
 
     /**
      * Updating a transaction
@@ -528,7 +569,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //        values.put(authenticationCode, st.getAuthenticationCode());
         values.put(status,st.getStatus());
         // updating row
-        return db.update(transactionTable, values, userId + " = ?", new String[]{String.valueOf(st.getDeviceTransactionId())});
+        return db.update(transactionTable, values, transactionId + " = ?", new String[]{String.valueOf(st.getDeviceTransactionId())});
     }
 
 
@@ -653,6 +694,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(nozzleName, nozzle.getNozzleName());
         values.put(nozzleIndex,nozzle.getNozzleIndex());
         values.put(pumpId,nozzle.getPumpId());
+        values.put(statusCode,nozzle.getStatusCode());
         values.put(productId,nozzle.getProductId());
         values.put(productName, nozzle.getProductName());
         values.put(price, nozzle.getUnitPrice());

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import databaseBean.DBHelper;
+import entities.Nozzle;
 import entities.WorkStatus;
 
 /**
@@ -60,9 +61,11 @@ public class PumpListAdapter extends ArrayAdapter<String> {
         List<WorkStatus>  statuses=new ArrayList<WorkStatus>();
         statuses=db.getAllStatusPerPump(userId,Long.parseLong(String.valueOf(pumpIds.get(position))));
         Iterator iterator=statuses.iterator();
+        Nozzle nozzle=db.getSingleNozzle(Long.parseLong(String.valueOf(pumpIds.get(position))));
 
         int nozzleDenialCheck = 0;
         int nozzleAcceptCheck = 0;
+        int nozzleTaken = 0;
 
         while (iterator.hasNext()){
             WorkStatus ws=new WorkStatus();
@@ -79,17 +82,24 @@ public class PumpListAdapter extends ArrayAdapter<String> {
 //
                 nozzleDenialCheck += 1;
                 break;
+            }else if(nozzle.getStatusCode() != 7){
+                nozzleTaken+=1;
+                break;
             }
+
         }
 
         if(nozzleDenialCheck > 0){
             pumpImg.setImageResource(R.drawable.pump_red);
-            pumpLabel.setText("Nozzle(s) rejected");
+            pumpLabel.setText("Nozzle(s) Rejected");
             pumpLabel.setTextColor(context.getResources().getColor(R.color.error));
         } else if(nozzleAcceptCheck > 0){
             pumpLabel.setText("Nozzle(s) Accepted");
             pumpLabel.setTextColor(context.getResources().getColor(R.color.rdcolor));
             pumpImg.setImageResource(R.drawable.pump_green);
+        }else if(nozzleTaken>0){
+                pumpLabel.setText("Nozzle(s) taken");
+                pumpImg.setImageResource(R.drawable.pump_gray);
         }else{
             pumpLabel.setText("Available to Choose");
             //pumpLabel.setTextColor(context.getResources().getColor(R.color.rdoff));

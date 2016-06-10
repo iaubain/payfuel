@@ -26,7 +26,7 @@ public class LoadPaymentMode implements HandleUrlInterface {
     DBHelper db;
     boolean paymentLoaded = false;
     public boolean fetchPump(Context context, int userId){
-        Log.d(tag, "Initiating the link to fetch pumps");
+        Log.d(tag, "Initiating the link to fetch payment mode");
         this.context=context;
         this.userId=userId;
         initDB();
@@ -88,6 +88,7 @@ public class LoadPaymentMode implements HandleUrlInterface {
     }
 
     public boolean isPaymentModeAvailable(int pId){
+        Log.d(tag,"Check local payment mode if "+pId+" is available");
         PaymentMode pm=new PaymentMode();
         pm=db.getSinglePaymentMode(pId);
         return pm != null;
