@@ -25,10 +25,22 @@
                 <Button
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="4dp"
                     android:textStyle="bold"
                     android:textColor="@color/positive"
                     android:background="@drawable/button_shape_positive"
-                    android:text="RECORDS"
+                    android:text="REPORT"
+                    android:onClick="report"
+                    android:id="@+id/rep" />
+
+                <Button
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="4dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/positive"
+                    android:background="@drawable/button_shape_positive"
+                    android:text="LOGS"
                     android:onClick="records"
                     android:id="@+id/rec" />
             </TableRow>

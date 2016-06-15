@@ -6,7 +6,7 @@
     android:background="@drawable/main_background"
     android:padding="3dp"
     android:orientation="vertical"
-    tools:context="com.aub.oltranz.payfuel.SellingTabHost">
+    tools:context=".SellingTabHost">
 
     <!--Header definition-->
 
@@ -46,7 +46,8 @@
         <TabHost
             android:id="@android:id/tabhost"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            xmlns:android="http://schemas.android.com/apk/res/android">
 
             <RelativeLayout
                 android:layout_width="match_parent"

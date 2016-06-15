@@ -7,17 +7,26 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import databaseBean.DBHelper;
 import entities.Logged_in_user;
+import entities.Nozzle;
+import entities.PaymentMode;
 import entities.SellingTransaction;
+import features.PrintReport;
 import features.RecordAdapter;
 
 public class Report extends ActionBarActivity {
@@ -40,10 +49,10 @@ public class Report extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_repport);
 
+        initAppComponents();
 
         initAppUI();
 
-        initAppComponents();
     }
 
     public void initAppUI(){
@@ -78,8 +87,10 @@ public class Report extends ActionBarActivity {
         dialog=new Dialog(this);
         db=new DBHelper(this);
     }
+
+
     public void records(View v){
-        Log.d(tag, "Reconciliation Room");
+        Log.d(tag, "Transaction Logs Room");
         if(dialog.isShowing()){
             dialog.dismiss();
             dialog=new Dialog(this);
@@ -94,7 +105,7 @@ public class Report extends ActionBarActivity {
             View divider = dialog.findViewById(dividerId);
             divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
         }
-        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Reconciliation Room</font>"));
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Transaction Logs</font>"));
 
         TextView tv=(TextView) dialog.findViewById(R.id.tv);
         Button exit=(Button) dialog.findViewById(R.id.done);
@@ -116,7 +127,164 @@ public class Report extends ActionBarActivity {
         dialog.show();
     }
 
-    public void recordPopUp(){
+    public void report(View v){
+        Log.d(tag, "On Shift Transactions Report");
+        if(dialog.isShowing()){
+            dialog.dismiss();
+            dialog=new Dialog(this);
+        }
+        dialog=new Dialog(this);
+        dialog.setContentView(R.layout.user_report);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
 
+        int dividerId = dialog.getContext().getResources().getIdentifier("android:id/titleDivider", null, null);
+        if (dividerId != 0) {
+            View divider = dialog.findViewById(dividerId);
+            divider.setBackgroundColor(getResources().getColor(R.color.appcolor));
+        }
+        dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Transaction Report</font>"));
+
+        final TextView preview=(TextView) dialog.findViewById(R.id.data);
+        final TextView tv=(TextView) dialog.findViewById(R.id.tv);
+        Button exit=(Button) dialog.findViewById(R.id.exit);
+        Button print=(Button) dialog.findViewById(R.id.print);
+
+        exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        print.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.v(tag,"Running a printing thread");
+                        try{
+
+                            PrintReport pr=new PrintReport(context,db.getSingleUser(userId).getBranch_name(),preview.getText().toString());
+                            String print=pr.reportPrint();
+                            if(!print.equalsIgnoreCase("Success")){
+                                tv.setText(print);
+                            }
+
+                        }catch (Exception e){
+                            tv.setText("Error Occured");
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                new Thread(runnable).start();
+
+            }
+        });
+
+        preview.setText("Total Transactions: " + db.getTransactionCount(userId) + " Successful: " + db.getTransactionCountSucceeded(userId) + " Pending: " + db.getTransactionCountPending(userId) + " Cancelled: " + db.getTransactionCountCancelled(userId));
+
+        List<SellingTransaction> sts= db.getAllTransactionsPerTime(userId);
+        HashMap<String, Double> nozzleData = new HashMap<String, Double>();
+        HashMap<String, Double> paymentData = new HashMap<String, Double>();
+        HashMap<String, Double> productData = new HashMap<String, Double>();
+        Double bigSum= Double.valueOf(0);
+
+        if(sts.isEmpty()){
+            preview.setText("No Data Yet");
+            print.setClickable(false);
+        }else{
+
+            for(SellingTransaction st: sts){
+                double tempQty;
+                double tempAmnt;
+                double tempProd;
+
+                Nozzle nozzle=db.getSingleNozzle(st.getNozzleId());
+                String nozzleName=nozzle.getNozzleName();
+
+                String productName=nozzle.getProductName();
+
+                PaymentMode pm=db.getSinglePaymentMode(st.getPaymentModeId());
+                String paymentName=pm.getName();
+
+                //Nozzles and their sales quantity
+                if(nozzleData.containsKey(nozzleName)) {
+                    tempQty = nozzleData.get(nozzleName)+st.getQuantity();
+                    nozzleData.put(nozzleName,tempQty);
+                }
+                else {
+                    nozzleData.put(nozzleName, st.getQuantity());
+                }
+
+                //Product and their sales quantity
+                if(productData.containsKey(productName)) {
+                    tempProd = productData.get(productName)+st.getQuantity();
+                    productData.put(productName,tempProd);
+                }
+                else {
+                    productData.put(productName, st.getQuantity());
+                }
+
+                //Payment mode and their sales Amount
+                if(paymentData.containsKey(paymentName)) {
+                    tempAmnt = paymentData.get(paymentName)+st.getAmount();
+                    paymentData.put(paymentName,tempAmnt);
+                }
+                else {
+                    paymentData.put(paymentName, st.getAmount());
+                }
+                bigSum+=st.getAmount();
+            }
+
+            //Displays data on TextView tv monitor
+            preview.setText("User: "+db.getSingleUser(userId).getName() + "\n\n");
+            for (HashMap.Entry<String, Double> nData : nozzleData.entrySet()) {
+                preview.append(nData.getKey() + ": " + nData.getValue() + " Liters\n");
+            }
+            preview.append("\n");
+
+            for (HashMap.Entry<String, Double> pData : productData.entrySet()) {
+                preview.append(pData.getKey() + ": " + pData.getValue() + " Liters\n");
+            }
+            preview.append("\n");
+
+            for (HashMap.Entry<String, Double> payData : paymentData.entrySet()) {
+                preview.append(payData.getKey() + ": " + payData.getValue() + " Rwf\n");
+            }
+            preview.append("\n");
+            preview.append("Total Income:" + bigSum + " Rwf\n\n");
+            final Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH)+1;
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            String now=year+"-"+month+"-"+day;
+            if(month<10)
+                now=year+"-0"+month+"-"+day;
+
+            if(day<10)
+                now=year+"-"+month+"-0"+day;
+
+            preview.append(now + "\n");
+            preview.append("Signature \n");
+        }
+
+        dialog.show();
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ( keyCode == KeyEvent.KEYCODE_MENU ) {
+            // do nothing
+            Log.e(tag, "action:" + "Menu Key Pressed");
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_BACK){
+            //do nothing on back key presssed
+            Log.e(tag, "action:" +"Back Key Pressed");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

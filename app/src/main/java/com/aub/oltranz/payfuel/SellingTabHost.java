@@ -10,6 +10,7 @@ import android.os.StrictMode;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -50,7 +51,7 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         super.onCreate(savedInstanceState);
         //go full screen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getActionBar().hide();
 
         setContentView(R.layout.activity_selling_tab_host);
 
@@ -112,21 +113,20 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         String extra= savedBundle.getString(getResources().getString(R.string.userid));
         int uId=Integer.parseInt(extra);
 
+        bundle = new Bundle();
+        bundle.putString(getResources().getString(R.string.userid), String.valueOf(uId));
 
         name=(TextView) findViewById(R.id.lblname);
         tHost = getTabHost();
         TabHost.TabSpec tSpec;
         Intent intent;
+
         intent = new Intent().setClass(this, Selling.class);
-        bundle = new Bundle();
-        bundle.putString(getResources().getString(R.string.userid), String.valueOf(uId));
         intent.putExtras(bundle);
         tSpec = tHost.newTabSpec("sell").setIndicator("Sell Portal") .setContent(intent);
         tHost.addTab(tSpec);
 
         intent = new Intent().setClass(this, Report.class);
-        bundle = new Bundle();
-        bundle.putString(getResources().getString(R.string.userid), String.valueOf(uId));
         intent.putExtras(bundle);
         tSpec = tHost.newTabSpec("report").setIndicator("Report Portal") .setContent(intent);
         tHost.addTab(tSpec);
@@ -207,8 +207,9 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
                         long log=0;
                         //delete Work Status
                         db.deleteStatusByUser(userId);
-                        //delete user
 
+                        //delete user
+                        // db.truncateTransactions();
                         Logged_in_user user=new Logged_in_user();
                         user.setLogged(0);
                         log=db.updateUser(user);
@@ -251,5 +252,19 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
                     }
                 });
         alertDialog.show();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ( keyCode == KeyEvent.KEYCODE_MENU ) {
+            // do nothing
+            Log.e(tag, "action:" + "Menu Key Pressed");
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_BACK){
+            //do nothing on back key presssed
+            Log.e(tag, "action:" +"Back Key Pressed");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

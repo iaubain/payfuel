@@ -89,6 +89,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
         final Button accept=(Button) rowView.findViewById(R.id.accept);
 
         final Nozzle nozzle=nozzles.get(position);
+        final boolean[] refuseCheck = {false},acceptCheck={false};
 
         //When a nozzle was already taken
         if(nozzle.getStatusCode()==8){
@@ -114,7 +115,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
             WorkStatus ws=db.getSingleStatus(userId,nozzle.getNozzleId());
             if(ws != null){
                 //when a nozzle status was found
-                if(ws.getStatusCode()==1){
+                if(ws.getStatusCode()==2){
                     //when nozzle was selected
                     label.setTextColor(context.getResources().getColor(R.color.rdcolor));
                     label.setText("Accepted");
@@ -126,7 +127,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                     accept.setTextColor(context.getResources().getColor(R.color.white));
                     accept.setBackground(context.getResources().getDrawable(R.drawable.bckgreen));
 
-                }else if(ws.getStatusCode()==0){
+                }else if(ws.getStatusCode()==1){
                     //when nozzle was denied
                     label.setTextColor(context.getResources().getColor(R.color.error));
                     label.setText("Denied");
@@ -160,6 +161,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
             @Override
             public void onClick(View view) {
                 Log.d(tag, "Refused: " + nozzle.getNozzleId());
+
                 refuse.setTextColor(context.getResources().getColor(R.color.white));
                 refuse.setBackground(context.getResources().getDrawable(R.drawable.bckred));
 
@@ -167,44 +169,65 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                 accept.setBackground(context.getResources().getDrawable(R.drawable.border_green));
                 WorkStatus ws;
                 int statusCount=db.getStatusCountByUserAndPump(userId,nozzle.getNozzleId());
-                if(statusCount<=0){
-                    ws=new WorkStatus();
-                    ws.setMessage("Denied");
-                    ws.setStatusCode(0);
-                    ws.setNozzleId(nozzle.getNozzleId());
-                    ws.setPumpId(pumpId);
-                    ws.setUserId(userId);
-                    int dbId=(int) db.createStatus(ws);
-                    if(dbId > 0){
-                        label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Denied");
-                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                if(!refuseCheck[0]){
+                    if(statusCount<=0){
+                        ws=new WorkStatus();
+                        ws.setMessage("Denied");
+                        ws.setStatusCode(1);
+                        ws.setNozzleId(nozzle.getNozzleId());
+                        ws.setPumpId(pumpId);
+                        ws.setUserId(userId);
+                        int dbId=(int) db.createStatus(ws);
+                        if(dbId > 0){
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Denied");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }else{
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Error Occurred");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }
+                    }else if(statusCount > 0){
+                        ws=new WorkStatus();
+                        ws.setMessage("Denied");
+                        ws.setStatusCode(1);
+                        ws.setNozzleId(nozzle.getNozzleId());
+                        int dbId= db.updateStatus(ws);
+                        if(dbId > 0){
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Denied");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }else{
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Error Occurred");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Error Choosing");
+                        label.setText("Status Error");
                         nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
-                }else if(statusCount > 0){
+                    refuseCheck[0] =true;
+                }else{
                     ws=new WorkStatus();
-                    ws.setMessage("Denied");
+                    ws.setMessage("Available");
                     ws.setStatusCode(0);
                     ws.setNozzleId(nozzle.getNozzleId());
                     int dbId= db.updateStatus(ws);
                     if(dbId > 0){
-                        label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Denied");
-                        nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        label.setTextColor(context.getResources().getColor(R.color.rdcolor));
+                        label.setText("Available to Choose");
+                        nozzleIcon.setImageResource(R.drawable.nozzle_blue);
+                        refuse.setTextColor(context.getResources().getColor(R.color.error));
+                        refuse.setBackground(context.getResources().getDrawable(R.drawable.border_red));
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Error Choosing");
+                        label.setText("Error Occurred");
                         nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
-                }else{
-                    label.setTextColor(context.getResources().getColor(R.color.error));
-                    label.setText("Status Error");
-                    nozzleIcon.setImageResource(R.drawable.nozzle_red);
-                }
 
+                    refuseCheck[0] =false;
+                }
             }
         });
 
@@ -219,45 +242,67 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
                 accept.setBackground(context.getResources().getDrawable(R.drawable.bckgreen));
                 WorkStatus ws;
                 int statusCount=db.getStatusCountByUserAndPump(userId,nozzle.getNozzleId());
-                if(statusCount<=0){
-                    ws=new WorkStatus();
-                    ws.setMessage("Accepted");
-                    ws.setStatusCode(1);
-                    ws.setNozzleId(nozzle.getNozzleId());
-                    ws.setPumpId(pumpId);
-                    ws.setUserId(userId);
-                    int dbId=(int) db.createStatus(ws);
-                    if(dbId > 0){
-                        label.setTextColor(context.getResources().getColor(R.color.rdcolor));
-                        label.setText("Accepted");
-                        nozzleIcon.setImageResource(R.drawable.nozzle_green);
+                if(!acceptCheck[0]){
+                    if(statusCount<=0){
+                        ws=new WorkStatus();
+                        ws.setMessage("Accepted");
+                        ws.setStatusCode(2);
+                        ws.setNozzleId(nozzle.getNozzleId());
+                        ws.setPumpId(pumpId);
+                        ws.setUserId(userId);
+                        int dbId=(int) db.createStatus(ws);
+                        if(dbId > 0){
+                            label.setTextColor(context.getResources().getColor(R.color.rdcolor));
+                            label.setText("Accepted");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_green);
+                        }else{
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Error Choosing");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }
+                    }else if(statusCount > 0){
+                        ws=new WorkStatus();
+                        ws.setMessage("Accepted");
+                        ws.setStatusCode(2);
+                        ws.setNozzleId(nozzle.getNozzleId());
+                        int dbId= db.updateStatus(ws);
+                        if(dbId > 0){
+                            label.setTextColor(context.getResources().getColor(R.color.rdcolor));
+                            label.setText("Accepted");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_green);
+                        }else{
+                            label.setTextColor(context.getResources().getColor(R.color.error));
+                            label.setText("Error Choosing");
+                            nozzleIcon.setImageResource(R.drawable.nozzle_red);
+                        }
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Error Choosing");
+                        label.setText("Status Error");
                         nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
-                }else if(statusCount > 0){
+                    acceptCheck[0] =true;
+                }else {
                     ws=new WorkStatus();
-                    ws.setMessage("Accepted");
-                    ws.setStatusCode(1);
+                    ws.setMessage("Available");
+                    ws.setStatusCode(0);
                     ws.setNozzleId(nozzle.getNozzleId());
                     int dbId= db.updateStatus(ws);
                     if(dbId > 0){
                         label.setTextColor(context.getResources().getColor(R.color.rdcolor));
-                        label.setText("Accepted");
-                        nozzleIcon.setImageResource(R.drawable.nozzle_green);
+                        label.setText("Available to Choose");
+                        nozzleIcon.setImageResource(R.drawable.nozzle_blue);
+                        accept.setTextColor(context.getResources().getColor(R.color.positive));
+                        accept.setBackground(context.getResources().getDrawable(R.drawable.border_green));
                     }else{
                         label.setTextColor(context.getResources().getColor(R.color.error));
-                        label.setText("Error Choosing");
+                        label.setText("Error Occurred");
                         nozzleIcon.setImageResource(R.drawable.nozzle_red);
                     }
-                }else{
-                    label.setTextColor(context.getResources().getColor(R.color.error));
-                    label.setText("Status Error");
-                    nozzleIcon.setImageResource(R.drawable.nozzle_red);
+
+                    acceptCheck[0] =false;
                 }
 
-            }
+                }
         });
 
         return rowView;

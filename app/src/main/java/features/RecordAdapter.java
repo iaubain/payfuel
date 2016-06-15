@@ -1,7 +1,6 @@
 package features;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import com.aub.oltranz.payfuel.R;
 import java.util.List;
 
 import databaseBean.DBHelper;
+import entities.Nozzle;
 import entities.SellingTransaction;
 import models.TransactionPrint;
 
@@ -53,13 +53,19 @@ public class RecordAdapter extends ArrayAdapter<SellingTransaction> {
         final Button print=(Button) rowView.findViewById(R.id.print);
 
         transId.setText(String.valueOf(st.getDeviceTransactionId()));
-        prodInfo.setText(db.getSingleNozzle(st.getNozzleId()).getProductName()+" /"+st.getQuantity()+"L /"+st.getPlateNumber());
+        String prodName="product";
+        Nozzle nozzle=db.getSingleNozzle(st.getNozzleId());
+        if(nozzle != null && nozzle.getProductName() != null)
+            prodName=db.getSingleNozzle(st.getNozzleId()).getProductName();
+
+        prodInfo.setText(db.getSingleNozzle(st.getNozzleId()).getNozzleName()+" /"+prodName+" /"+st.getQuantity()+"L /"+st.getPlateNumber());
+      //  prodInfo.setText(prodName+" /"+qty+"L /"+plate);
         if(st.getStatus()==100 || st.getStatus()==101){
-            payInfo.setText(db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Succeeded");
+            payInfo.setText(st.getDeviceTransactionTime()+" /"+db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Succeeded");
             payInfo.setTextColor(context.getResources().getColor(R.color.positive));
         }
         else if(st.getStatus()==301){
-            payInfo.setText(db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Pending");
+            payInfo.setText(st.getDeviceTransactionTime()+" /"+db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Pending");
             payInfo.setTextColor(context.getResources().getColor(R.color.tab_highlight));
 
             print.setEnabled(false);
@@ -67,7 +73,7 @@ public class RecordAdapter extends ArrayAdapter<SellingTransaction> {
             print.setBackground(context.getResources().getDrawable(R.drawable.button_shape_negative));
             print.setTextColor(context.getResources().getColor(R.color.nearblack));
         }else{
-            payInfo.setText(db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Failed");
+            payInfo.setText(st.getDeviceTransactionTime()+" /"+db.getSinglePaymentMode(st.getPaymentModeId()).getName()+" /"+st.getAmount()+"Rwf /Failed");
             payInfo.setTextColor(context.getResources().getColor(R.color.error));
 
             print.setEnabled(false);

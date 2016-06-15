@@ -74,7 +74,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
         super.onCreate(savedInstanceState);
         //go full screen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_select_pumps);
 
         savedBundle =getIntent().getExtras();
@@ -507,9 +507,20 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 public void onClick(View view) {
                     Log.v(tag,"Work status confirmed and ready to move");
                     //register pump
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.v(tag,"Running a printing thread");
+                            try{
+                                registerPump();
+                            }catch (Exception e){
+                                uiFeedBack(e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    new Thread(runnable).start();
                     dialog.dismiss();
-                    registerPump();
-
                 }
             });
 

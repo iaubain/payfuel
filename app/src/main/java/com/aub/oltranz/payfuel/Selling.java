@@ -12,7 +12,9 @@ import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -76,6 +78,9 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //getSupportActionBar().hide();
+
         setContentView(R.layout.activity_selling);
 
         //initialize app Components
@@ -145,7 +150,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 if(tempPumpId.isEmpty()||tempPumpId==null || (!tempPumpId.contains(String.valueOf(ws.getNozzleId()))) ){
                     tempPumpId.add(String.valueOf(ws.getNozzleId()));
 
-                    if(ws.getStatusCode()==1){
+                    if(ws.getStatusCode()==2){
                         Nozzle nozzle=db.getSingleNozzle(ws.getNozzleId());
                         Pump pump=db.getSinglePump(ws.getPumpId());
 
@@ -871,5 +876,19 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             dialog.dismiss();
         }
         uiFeedBack(message);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ( keyCode == KeyEvent.KEYCODE_MENU ) {
+            // do nothing
+            Log.e(tag, "action:" + "Menu Key Pressed");
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_BACK){
+            //do nothing on back key presssed
+            Log.e(tag, "action:" +"Back Key Pressed");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

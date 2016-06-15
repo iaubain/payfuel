@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Calendar;
 import java.util.List;
 
 import entities.AsyncTransaction;
@@ -30,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     //database name
     public static final String DATABASE_NAME = "payfuel.db";
     // Logcat tag
-     static final String LOG = "PayFuel: "+DBHelper.class.getSimpleName();
+     static final String tag = "PayFuel: "+DBHelper.class.getSimpleName();
      static final int DATABASE_VERSION = 1;
 
     //______________Database fields and variables____________________\\
@@ -196,7 +196,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // insert row
         long userId = db.insertWithOnConflict(userTable, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 
-        Log.d(LOG, "The item Id is: " + userId);
+        Log.d(tag, "The item Id is: " + userId);
         return userId;
     }
 
@@ -207,7 +207,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT  * FROM " + userTable + " WHERE "+ userId + " = " + u_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.moveToFirst() && c.getCount()>0) {
             c.moveToFirst();
@@ -232,7 +232,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Logged_in_user> users = new ArrayList<Logged_in_user>();
         String selectQuery = "SELECT  * FROM " + userTable;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -355,7 +355,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         SellingTransaction st = new SellingTransaction();
         String selectQuery = "SELECT  * FROM " + transactionTable + " WHERE "+ transactionId + " = " + t_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null)
             c.moveToFirst();
@@ -390,7 +390,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<SellingTransaction> sts = new ArrayList<SellingTransaction>();
         String selectQuery = "SELECT  * FROM " + transactionTable;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -435,7 +435,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<SellingTransaction> sts = new ArrayList<SellingTransaction>();
         String selectQuery = "SELECT  * FROM " + transactionTable + " WHERE "+ userId + " = " + user_id+" ORDER BY "+time+" DESC";
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -470,6 +470,65 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
 
+        return sts;
+    }
+
+    /**
+     * getting all Transactions based on time per user
+     */
+    public List<SellingTransaction> getAllTransactionsPerTime(long user_id) {
+        final Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH)+1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        String now=year+"-"+month+"-"+day;
+        if(month<10)
+            now=year+"-0"+month+"-"+day;
+
+        if(day<10)
+            now=year+"-"+month+"-0"+day;
+
+        Log.v(tag,"Report date is:"+now);
+
+        List<SellingTransaction> sts = new ArrayList<SellingTransaction>();
+        String selectQuery = "SELECT  * FROM " + transactionTable + " WHERE "+ userId + " = " + user_id+" AND date("+time+") == '"+now +"' ORDER BY "+time+" DESC";
+
+        Log.e(tag, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            while (c.isAfterLast() == false){
+                SellingTransaction st = new SellingTransaction();
+                st.setDeviceTransactionId(c.getLong(c.getColumnIndex(transactionId)));
+                st.setNozzleId(c.getInt(c.getColumnIndex(nozzleId)));
+                st.setAmount(Double.parseDouble(c.getString(c.getColumnIndex(amount))));
+                st.setQuantity(Double.parseDouble(c.getString(c.getColumnIndex(quantity))));
+                st.setPlateNumber(c.getString(c.getColumnIndex(plateNumber)));
+                st.setTelephone(c.getString(c.getColumnIndex(telephone)));
+                st.setName(c.getString(c.getColumnIndex(customerName)));
+                st.setTin(c.getString(c.getColumnIndex(tin)));
+                st.setVoucherNumber(c.getString(c.getColumnIndex(voucherNumber)));
+                st.setAuthorisationCode(c.getString(c.getColumnIndex(authorisationCode)));
+                st.setDeviceTransactionTime(c.getString(c.getColumnIndex(time)).toString());
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setDeviceNo(c.getString(c.getColumnIndex(deviceId)));
+                st.setStatus(c.getInt(c.getColumnIndex(status)));
+                st.setBranchId(c.getInt(c.getColumnIndex(branchId)));
+                st.setUserId(c.getInt(c.getColumnIndex(userId)));
+                st.setAuthenticationCode(c.getInt(c.getColumnIndex(authenticationCode)));
+                st.setPumpId(c.getInt(c.getColumnIndex(pumpId)));
+                st.setProductId(c.getInt(c.getColumnIndex(productId)));
+                st.setPaymentModeId(c.getInt(c.getColumnIndex(paymentModeId)));
+                // adding transaction to list
+                sts.add(st);
+                c.moveToNext();
+            }
+        }
+
+        Log.v(tag,"Size of transaction report: "+sts.size());
         return sts;
     }
 
@@ -601,7 +660,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Pump pump = new Pump();
         String selectQuery = "SELECT  * FROM " + pumpTable + " WHERE "+ pumpId + " = " + p_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.moveToFirst() && c.getCount()>0) {
             c.moveToFirst();
@@ -623,7 +682,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Pump> pumps = new ArrayList<Pump>();
         String selectQuery = "SELECT  * FROM " + pumpTable;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -713,7 +772,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Nozzle nozzle=new Nozzle();
         String selectQuery = "SELECT  * FROM " + nozzleTable + " WHERE "+ nozzleId + " = " + n_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.moveToFirst() && c.getCount()>0) {
             c.moveToFirst();
@@ -739,7 +798,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Nozzle> nozzles = new ArrayList<Nozzle>();
         String selectQuery = "SELECT  * FROM " + nozzleTable;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -774,7 +833,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Nozzle> nozzles = new ArrayList<Nozzle>();
         String selectQuery = "SELECT  * FROM " + nozzleTable+ " WHERE " + pumpId + " = " + String.valueOf(pump_Id);
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -897,7 +956,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         DeviceIdentity di=new DeviceIdentity();
         String selectQuery = "SELECT  * FROM " + deviceTable;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null)
             c.moveToFirst();
@@ -959,7 +1018,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         PaymentMode pm=new PaymentMode();
         String selectQuery = "SELECT  * FROM " + paymentModeTable + " WHERE "+ paymentModeId + " = " + p_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.moveToFirst() && c.getCount()>0) {
             c.moveToFirst();
@@ -980,7 +1039,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<PaymentMode> pms = new ArrayList<PaymentMode>();
         String selectQuery = "SELECT  * FROM " + paymentModeTable;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1065,7 +1124,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         SelectedPumps sp=new SelectedPumps();
         String selectQuery = "SELECT  * FROM " + selectedPumpTable + " WHERE "+ select_pump_id + " = " + n_id+" AND "+userId+" = "+u_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null)
             c.moveToFirst();
@@ -1082,7 +1141,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<SelectedPumps> sps = new ArrayList<SelectedPumps>();
         String selectQuery = "SELECT  * FROM " + selectedPumpTable + " WHERE "+userId+" = "+u_id;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1188,7 +1247,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT  * FROM " + productTable + " WHERE " + productId + " = " + p_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.getCount()>0){
             c.moveToFirst();
@@ -1259,7 +1318,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         AsyncTransaction at=new AsyncTransaction();
         String selectQuery = "SELECT  * FROM " + asyncTable + " WHERE "+ transactionId + " = " + t_id+" AND "+userId+" = "+u_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null)
             c.moveToFirst();
@@ -1280,7 +1339,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         AsyncTransaction at=new AsyncTransaction();
         String selectQuery = "SELECT  * FROM " + asyncTable + " WHERE "+ transactionId + " = " + t_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.getCount()>0){
             c.moveToFirst();
@@ -1302,7 +1361,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<AsyncTransaction> ats = new ArrayList<AsyncTransaction>();
         String selectQuery = "SELECT  * FROM " + asyncTable +" WHERE "+userId+" = "+u_id;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1407,7 +1466,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         WorkStatus ws=new WorkStatus();
         String selectQuery = "SELECT  * FROM " + statusTable + " WHERE "+ nozzleId + " = " + n_id+" AND "+ userId + " = " + user_id;
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c != null && c.moveToFirst() && c.getCount()>0) {
             c.moveToFirst();
@@ -1431,7 +1490,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<WorkStatus> statuses = new ArrayList<WorkStatus>();
         String selectQuery = "SELECT  * FROM " + statusTable+ " WHERE "+ userId + " = " + user_id + " AND "+ pumpId + " = " +pump_id;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1463,7 +1522,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<WorkStatus> statuses = new ArrayList<WorkStatus>();
         String selectQuery = "SELECT  * FROM " + statusTable+ " WHERE "+ userId + " = " + user_id;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1496,7 +1555,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<WorkStatus> statuses = new ArrayList<WorkStatus>();
         String selectQuery = "SELECT  * FROM " + statusTable+ " WHERE "+ userId + " = " + user_id;
 
-        Log.e(LOG, selectQuery);
+        Log.e(tag, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1506,7 +1565,7 @@ public class DBHelper extends SQLiteOpenHelper {
             while(c.isAfterLast() == false){
 //                WorkStatus ws=new WorkStatus();
 
-                if(c.getInt(c.getColumnIndex(statusCode))==1)
+                if(c.getInt(c.getColumnIndex(statusCode))==2)
                     return true;
 //                ws.setStatusId(c.getInt(c.getColumnIndex(statusId)));
 //                ws.setUserId(c.getInt(c.getColumnIndex(userId)));
@@ -1576,7 +1635,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * getting nozzle count by user Id
+     * getting Status Count count by user Id
      */
     public int getStatusCountByUserAndPump(long user_id, long nozzle_id) {
         SQLiteDatabase db = this.getReadableDatabase();
