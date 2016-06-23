@@ -1,6 +1,8 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -18,6 +21,7 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,6 +34,7 @@ import features.HandleUrl;
 import features.HandleUrlInterface;
 import features.LoadPaymentMode;
 import features.LoadPumps;
+import features.ServiceCheck;
 import features.ThreadControl;
 import models.MapperClass;
 
@@ -106,6 +111,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
     public void loginFunction(View v) {
         //db.truncateDevice();
         // db.truncateUser();
+        //db.truncateAsyncTransactions();
         Log.d(tag, "Login Process");
         //launchBarDialog(v);
        // showDialog("Logging In. Please wait...");
@@ -149,7 +155,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 
         //DeviceIdentity di=new DeviceIdentity();
         //  di=db.getSingleDevice();
-        // System.out.println("device name: "+di.getDeviceNo());
+        // System.out.println("device name: "+di.getDeviceId());
         try {
             int devCount = devCount = db.getDeviceCount();
             if (devCount <= 0) {
@@ -212,6 +218,17 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                             if (loadPayment(this, userId)) {
                                                 // Redirect the user to select pump_nozzles page
                                                // showDialog("Logging In. Done...");
+                                                ServiceCheck sc=new ServiceCheck(this);
+                                                if(!sc.isMyServiceRunning(AppMainService.class)){
+                                                    Calendar cal = Calendar.getInstance();
+                                                    Intent alarmIntent = new Intent(context, AppMainService.class);
+                                                    PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                                                    AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                                                    //clean alarm cache for previous pending intent
+                                                    alarm.cancel(pintent);
+                                                    // schedule for every 4 seconds
+                                                    alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 4 * 1000, pintent);
+                                                }
                                                 intent = new Intent(context, SelectPumps.class);
                                                 Bundle bundle = new Bundle();
                                                 bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -232,6 +249,18 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                         //Select pump_nozzles page redirection
                                                 // Redirect the use to sale page
                                                // showDialog("Logging In. Done...");
+                                        ServiceCheck sc=new ServiceCheck(this);
+                                        if(!sc.isMyServiceRunning(AppMainService.class)){
+                                            Calendar cal = Calendar.getInstance();
+                                            Intent alarmIntent = new Intent(context, AppMainService.class);
+                                            PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                                            AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                                            //clean alarm cache for previous pending intent
+                                            alarm.cancel(pintent);
+                                            // schedule for every 4 seconds
+                                            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 4 * 1000, pintent);
+                                        }
+
                                                 intent = new Intent(context, SellingTabHost.class);
                                                 Bundle bundle = new Bundle();
                                                 bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -283,6 +312,19 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                     if (loadPayment(this, userId)) {
                                         // Redirect the use to sale page
                                        // showDialog("Logging In. Done...");
+
+                                        ServiceCheck sc=new ServiceCheck(this);
+                                        if(!sc.isMyServiceRunning(AppMainService.class)){
+                                            Calendar cal = Calendar.getInstance();
+                                            Intent alarmIntent = new Intent(context, AppMainService.class);
+                                            PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                                            AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                                            //clean alarm cache for previous pending intent
+                                            alarm.cancel(pintent);
+                                            // schedule for every 4 seconds
+                                            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 4 * 1000, pintent);
+                                        }
+
                                         intent = new Intent(context, SelectPumps.class);
                                         Bundle bundle = new Bundle();
                                         bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -329,6 +371,19 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                                 if (loadPayment(this, userId)) {
                                     // Redirect the use to sale page
                                    // showDialog("Logging In. Done...");
+
+                                    ServiceCheck sc=new ServiceCheck(this);
+                                    if(!sc.isMyServiceRunning(AppMainService.class)){
+                                        Calendar cal = Calendar.getInstance();
+                                        Intent alarmIntent = new Intent(context, AppMainService.class);
+                                        PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                                        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                                        //clean alarm cache for previous pending intent
+                                        alarm.cancel(pintent);
+                                        // schedule for every 4 seconds
+                                        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 4 * 1000, pintent);
+                                    }
+
                                     intent = new Intent(context, SelectPumps.class);
                                     Bundle bundle = new Bundle();
                                     bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -425,8 +480,14 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 
     }
 
-    public void logout(int userId) {
-
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+       if(keyCode == KeyEvent.KEYCODE_BACK){
+            //do nothing on back key presssed
+            Log.e(tag, "action:" +"Back Key Pressed");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     public void pause() {

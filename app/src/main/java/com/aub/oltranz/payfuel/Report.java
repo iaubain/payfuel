@@ -1,5 +1,6 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.StrictMode;
@@ -107,9 +108,9 @@ public class Report extends ActionBarActivity {
         }
         dialog.setTitle(Html.fromHtml("<font color='" + getResources().getColor(R.color.appcolor) + "'>Transaction Logs</font>"));
 
-        TextView tv=(TextView) dialog.findViewById(R.id.tv);
+        final TextView tv=(TextView) dialog.findViewById(R.id.tv);
         Button exit=(Button) dialog.findViewById(R.id.done);
-        ListView transView=(ListView) dialog.findViewById(R.id.records);
+        final ListView transView=(ListView) dialog.findViewById(R.id.records);
 
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,11 +119,26 @@ public class Report extends ActionBarActivity {
             }
         });
 
-        tv.setText("Total Transactions: "+db.getTransactionCount(userId)+" Successful: "+db.getTransactionCountSucceeded(userId)+" Pending: "+db.getTransactionCountPending(userId)+" Cancelled: "+db.getTransactionCountCancelled(userId));
+        tv.setText("Total Transactions: " + db.getTransactionCount(userId) + " Successful: " + db.getTransactionCountSucceeded(userId) + " Pending: " + db.getTransactionCountPending(userId) + " Cancelled: " + db.getTransactionCountCancelled(userId));
 
-        List<SellingTransaction> sts= db.getAllTransactionsPerUser(userId);
-        RecordAdapter ra=new RecordAdapter(this,userId,sts);
-        transView.setAdapter(ra);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.v(tag,"Loading Transaction Logs");
+                try{
+
+                    List<SellingTransaction> sts= db.getAllTransactionsPerUser(userId);
+                    RecordAdapter ra=new RecordAdapter((Activity) context,userId,sts);
+                    transView.setAdapter(ra);
+
+                }catch (Exception e){
+                    tv.setText("Error Occured");
+                    e.printStackTrace();
+                }
+            }
+        };
+        new Thread(runnable).start();
+
 
         dialog.show();
     }
@@ -182,6 +198,7 @@ public class Report extends ActionBarActivity {
 
             }
         });
+
 
         preview.setText("Total Transactions: " + db.getTransactionCount(userId) + " Successful: " + db.getTransactionCountSucceeded(userId) + " Pending: " + db.getTransactionCountPending(userId) + " Cancelled: " + db.getTransactionCountCancelled(userId));
 

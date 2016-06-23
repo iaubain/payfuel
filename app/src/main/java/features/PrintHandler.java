@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import justtide.ThermalPrinter;
 import models.TransactionPrint;
@@ -140,7 +141,7 @@ public class PrintHandler {
         thermalPrinter.print("Served Pump: " + tp.getPumpName() + "\n");
         thermalPrinter.print("Served Nozzle: " + tp.getNozzleName() + "\n");
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         String dateString=tp.getDeviceTransactionTime();
         try {
 

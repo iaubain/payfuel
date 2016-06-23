@@ -3,8 +3,10 @@ package com.aub.oltranz.payfuel;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import appBean.DeviceRegistrationResponse;
 import databaseBean.DBHelper;
 import entities.DeviceIdentity;
+import features.DeviceUuidFactory;
 import features.HandleUrl;
 import features.HandleUrlInterface;
 import models.DeviceBean;
@@ -66,7 +69,7 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     //initialize Activity components
     public void initActComponent(){
         Log.d(tag,"Initialize Activity Components");
-        deviceSerial= Build.SERIAL;
+        deviceSerial= Build.SERIAL != Build.UNKNOWN ? Build.SERIAL : Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         db=new DBHelper(context);
         mapper=new MapperClass();
     }
@@ -81,6 +84,16 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
                 devBean.setDeviceId(devName.getText().toString());
                 devBean.setEmail(userName.getText().toString());
                 devBean.setPassword(password.getText().toString());
+
+                if(TextUtils.isEmpty(deviceSerial))
+                    devBean.setSerialNumber(deviceSerial);
+                else{
+                    DeviceUuidFactory duf=new DeviceUuidFactory(this);
+                    try{
+                        deviceSerial= String.valueOf(duf.getDeviceUuid());
+                    }catch (Exception e){e.printStackTrace();}
+                }
+
 
                 //disabling the UI
                 disableUI();

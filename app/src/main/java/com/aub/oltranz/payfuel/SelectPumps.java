@@ -1,6 +1,8 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,14 +25,18 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import appBean.ChoosenPumpResponse;
+import appBean.LogoutResponse;
 import databaseBean.DBHelper;
+import entities.DeviceIdentity;
 import entities.Logged_in_user;
 import entities.Nozzle;
 import entities.Pump;
@@ -38,9 +45,12 @@ import features.ExpandableListAdapter;
 import features.HandleUrl;
 import features.HandleUrlInterface;
 import features.NozzleListAdapter;
+import features.PreferenceManager;
 import features.PumpListAdapter;
+import features.ServiceCheck;
 import models.ChoosenPumpAndNozzle;
 import models.ChoosenPumps;
+import models.LogoutData;
 import models.MapperClass;
 
 public class SelectPumps extends ActionBarActivity implements AdapterView.OnItemClickListener, HandleUrlInterface {
@@ -53,6 +63,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     ExpandableListView expListView;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
+    boolean doubleBackToExitPressedOnce = false;
 
     MapperClass mapperClass;
     DBHelper db;
@@ -143,9 +154,10 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.d(tag,"Pump Selected at: "+position+" and id: "+ pumpId.get(position));
+        Pump pump= (Pump) pumpList.get(position);
+        Log.d(tag,"Pump Selected at: "+position+" and id: "+ pump.getPumpId());
         //ViewGroup.LayoutParams inflater=parent.getLayoutParams();
-        String pId=  String.valueOf(pumpId.get(position));
+        String pId=  String.valueOf(pump.getPumpId());
         ImageView imageView = (ImageView) view.findViewById(R.id.icon);
         TextView label = (TextView) view.findViewById(R.id.indicator);
 
@@ -175,26 +187,11 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
         int pumpCount=db.getPumpCount();
         if(pumpCount>0){
             //when some pump found
-            pumpList=new ArrayList<Pump>();
-            pumpId=new ArrayList<String>();
-            pumpNames=new ArrayList<String>();
-            List<String>imgId=new ArrayList<String>();
             pumpList=db.getAllPumps();
             if(!pumpList.isEmpty()){
-                List<String> pumpName=new ArrayList<String>();
-                Iterator iterator=pumpList.iterator();
-                while (iterator.hasNext()){
-                    Pump pump=new Pump();
-                    pump=(Pump) iterator.next();
-                    if(pump.getStatus()==7) {
-                        pumpName.add(pump.getPumpName());
-                        pumpNames.add(pump.getPumpName());
-                        pumpId.add(pump.getPumpId());
-                        imgId.add(String.valueOf(R.drawable.pump_blue));
-                    }
-                }
+
                 //initiating adapter
-                adapter=new PumpListAdapter(this,userId, pumpName, pumpId,imgId);
+                adapter=new PumpListAdapter(this,userId, pumpList);
                 mList.setAdapter(adapter);
                 mList.setOnItemClickListener(this);
             }else{
@@ -247,7 +244,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     }
 
     //Load nozzle of a selected pump
-    public void loadNozzle(int userId, int pumpId, final View pumpView){
+    public void loadNozzle(int userId, final int pumpId, final View pumpView){
         Log.d(tag, "Load Nozzle and initiate Nozzle list view");
         dialog=new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_LEFT_ICON);
@@ -275,6 +272,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 int nozzleCount = nozzleListView.getCount();
                 int nozzleDenialCheck = 0;
                 int nozzleAcceptCheck = 0;
+                int nozzleTakenCheck = 0;
 
                 for (int i = 0; i <= nozzleCount - 1; i++) {
 
@@ -290,6 +288,11 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                     if (lbl.getText().toString().equals("Accepted")) {
                         nozzleAcceptCheck += 1;
                     }
+                    List<Nozzle> nozzles=db.getAllNozzlePerPump(pumpId);
+                    for(Nozzle nozzle: nozzles){
+                        if(nozzle.getStatusCode()==8)
+                            nozzleTakenCheck+=1;
+                    }
                 }
                 ImageView pumpImg = (ImageView) pumpView.findViewById(R.id.icon);
                 TextView pumpLabel = (TextView) pumpView.findViewById(R.id.indicator);
@@ -301,6 +304,10 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                     pumpLabel.setText("Nozzle(s) Accepted");
                     pumpLabel.setTextColor(context.getResources().getColor(R.color.rdcolor));
                     pumpImg.setImageResource(R.drawable.pump_green);
+                }else if(nozzleTakenCheck>0){
+                    pumpLabel.setText("Nozzle(s) taken");
+                    pumpLabel.setTextColor(context.getResources().getColor(R.color.rdoff));
+                    pumpImg.setImageResource(R.drawable.pump_gray);
                 } else {
                     pumpLabel.setText("Available to Choose");
                     pumpLabel.setTextColor(context.getResources().getColor(R.color.rdoff));
@@ -423,77 +430,6 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
             for (int i = 0; i < listAdapter.getGroupCount(); i ++)
                 expListView.expandGroup(i);
 
-//            // Listview Group click listener
-//            expListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
-//
-//                @Override
-//                public boolean onGroupClick(ExpandableListView parent, View v,
-//                                            int groupPosition, long id) {
-//                    // Toast.makeText(getApplicationContext(),
-//                    // "Group Clicked " + listDataHeader.get(groupPosition),
-//                    // Toast.LENGTH_SHORT).show();
-//                    return false;
-//                }
-//            });
-//
-//            // Listview Group expanded listener
-//            expListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-//
-//                @Override
-//                public void onGroupExpand(int groupPosition) {
-//                    Toast.makeText(getApplicationContext(),
-//                            listDataHeader.get(groupPosition) + " Expanded",
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//
-//            // Listview Group collasped listener
-//            expListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-//
-//                @Override
-//                public void onGroupCollapse(int groupPosition) {
-//                    Toast.makeText(getApplicationContext(),
-//                            listDataHeader.get(groupPosition) + " Collapsed",
-//                            Toast.LENGTH_SHORT).show();
-//
-//                }
-//            });
-//
-//            // Listview on child click listener
-//            expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-//
-//                @Override
-//                public boolean onChildClick(ExpandableListView parent, View v,
-//                                            int groupPosition, int childPosition, long id) {
-//                    // TODO Auto-generated method stub
-//                    Toast.makeText(
-//                            getApplicationContext(),
-//                            listDataHeader.get(groupPosition)
-//                                    + " : "
-//                                    + listDataChild.get(
-//                                    listDataHeader.get(groupPosition)).get(
-//                                    childPosition), Toast.LENGTH_SHORT)
-//                            .show();
-//                    return false;
-//                }
-//            });
-//
-//
-//            back.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    Log.e(tag, "Confirmation Dialogue dismissing. restart the process");
-//                    dialog.dismiss();
-//                }
-//            });
-//
-//            done.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    Log.v(tag, "Data confirmed to ready to be forwared to selling Page");
-//                }
-//            });
-
             back.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -562,13 +498,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     }
 
     public void uiFeedBack(String message){
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                tv.setText("");
-            }
-        }, 3000);
+
         if(dialog.isShowing())
             dialog.dismiss();
         if(message==null || TextUtils.isEmpty(message)){
@@ -608,6 +538,22 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                     user.setLogged(1);
                     if(db.updateUser(user)>0){
                         //user status was updated successfully go to sell portal
+                        //Creating Shared preferences
+                        PreferenceManager prefs=new PreferenceManager(this);
+                        prefs.createPreference(userId);
+
+                        ServiceCheck sc=new ServiceCheck(this);
+                        if(!sc.isMyServiceRunning(AppMainService.class)){
+                            Calendar cal = Calendar.getInstance();
+                            Intent alarmIntent = new Intent(context, AppMainService.class);
+                            PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                            AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                            //clean alarm cache for previous pending intent
+                            alarm.cancel(pintent);
+                            // schedule for every 4 seconds
+                            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 4 * 1000, pintent);
+                        }
+
                         intent = new Intent(this, SellingTabHost.class);
                         Bundle bundle = new Bundle();
                         bundle.putString(getResources().getString(R.string.userid), String.valueOf(userId));
@@ -628,7 +574,42 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                 uiFeedBack(getResources().getString(R.string.faillurenotification));
             }
         }else{
-            uiFeedBack(getResources().getString(R.string.ambiguous));
+            if (object.getClass().getSimpleName().equalsIgnoreCase("LogoutResponse")){
+                LogoutResponse lr=(LogoutResponse) object;
+                try{
+                    if(lr.getStatusCode() != 100)
+                        uiFeedBack(lr.getMessage());
+                    else{
+                        long log=0;
+                        //delete Work Status
+                        db.deleteStatusByUser(userId);
+
+                        //delete user
+                        // db.truncateTransactions();
+                        Logged_in_user user=new Logged_in_user();
+                        user.setLogged(0);
+                        log=db.updateUser(user);
+                        Log.v(tag, "User log status 0: " + log);
+                        db.deleteUser(userId);
+                        db.deleteStatusByUser(userId);
+
+                        //removing shared preferences
+                        PreferenceManager prefs=new PreferenceManager(this);
+                        if(!prefs.deletePrefs()){
+                            Log.d(tag,"Deleting Shared preference failed");
+                        }
+
+                        intent=new Intent(this,Home.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        finish();
+                        startActivity(intent);
+                    }
+                }catch (Exception e){
+                    uiFeedBack(getResources().getString(R.string.faillurenotification));
+                }
+            }else{
+                uiFeedBack(getResources().getString(R.string.ambiguous));
+            }
         }
     }
 
@@ -638,7 +619,7 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
     }
 
     public void registerPump(){
-        Log.d(tag,"Registering choosen pumps and their nozzles");
+        Log.d(tag, "Registering choosen pumps and their nozzles");
         List<WorkStatus> statuses=db.getAllStatus(userId);
         List<ChoosenPumpAndNozzle> choosenPumpsList=new ArrayList<ChoosenPumpAndNozzle>();
         if(statuses.size()>0){
@@ -668,5 +649,50 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
         }else{
             uiFeedBack(getResources().getString(R.string.invaliddata));
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ( keyCode == KeyEvent.KEYCODE_MENU ) {
+            // do nothing
+            Log.e(tag, "action:" + "Menu Key Pressed");
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_BACK){
+            //do nothing on back key presssed
+            Log.e(tag, "action:" +"Back Key Pressed");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void logout(View v){
+        Log.v(tag, "Logging out...");
+
+        if (doubleBackToExitPressedOnce) {
+            DeviceIdentity di=db.getSingleDevice();
+            LogoutData ld=new LogoutData();
+            try {
+                ld.setDevId(di.getDeviceNo());
+                ld.setUserId(userId);
+                MapperClass mc=new MapperClass();
+
+                HandleUrl handleUrl=new HandleUrl(this,this,getResources().getString(R.string.logouturl),getResources().getString(R.string.post),mc.mapping(ld));
+            }catch (Exception e){
+                uiFeedBack(e.getMessage());
+            }
+
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click Logout again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce = false;
+            }
+        }, 2000);
     }
 }

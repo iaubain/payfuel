@@ -1,7 +1,10 @@
 package com.aub.oltranz.payfuel;
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -21,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import java.text.NumberFormat;
@@ -115,6 +119,11 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
         }
     }
 
+    public void refresh(){
+        Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh");
+        sendBroadcast(i);
+    }
+
     public void initAppComponents(){
         Log.d(tag, "Initializing Activity Components");
 
@@ -167,29 +176,6 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 
                         gridDataList.add(gridData);
                     }
-
-//                    Pump pump=db.getSinglePump(ws.getPumpId());
-//
-//
-//                    List<Nozzle> nozzles=db.getAllNozzlePerPump(pump.getPumpId());
-//                    Iterator iterator1=nozzles.iterator();
-//                    while (iterator1.hasNext()){
-//                        Nozzle nozzle=new Nozzle();
-//                        nozzle=(Nozzle) iterator1.next();
-//
-//                        gridData=new GridData();
-//
-//                        gridData.setPumpId(pump.getPumpId());
-//                        gridData.setPumpName(pump.getPumpName());
-//                        gridData.setNozzleId(nozzle.getNozzleId());
-//                        gridData.setNozzleName(nozzle.getNozzleName());
-//                        gridData.setPrice(nozzle.getUnitPrice());
-//                        gridData.setProduct(nozzle.getProductName());
-//                        gridData.setProductId(nozzle.getProductId());
-//                        gridData.setIndex(String.valueOf(nozzle.getNozzleIndex()));
-//
-//                        gridDataList.add(gridData);
-//                    }
                 }
             }
             sAdapter=new StatusAdapter(this,gridDataList);
@@ -682,6 +668,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     clickCount[0] +=1;
                 }else{
                     //do something when tries to click more than one time
+                    Log.e(tag,"Clicking more than one time same button");
                 }
             }
         });
@@ -803,7 +790,9 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 
 
                 //initialize activity UI
-                initAppUI();
+                //initAppUI();
+
+                refresh();
 
                 dialog.dismiss();
             }
@@ -816,7 +805,9 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 resetValue();
 
                 //initialize activity UI
-                initAppUI();
+                //initAppUI();
+                refresh();
+
                 dialog.dismiss();
             }
         });
@@ -847,13 +838,13 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
      * @param message
      */
     public void uiFeedBack(String message){
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                tv.setText("");
-            }
-        }, 3000);
+//        Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                tv.setText("");
+//            }
+//        }, 3000);
         if(dialog.isShowing())
             dialog.dismiss();
         if(message==null || TextUtils.isEmpty(message)){

@@ -12,6 +12,8 @@ public class DeviceBean {
     private String password;
     @JsonProperty("deviceId")
     private String deviceId;
+    @JsonProperty("serialNumber")
+    private String serialNumber;
 
     public String getEmail() {
         return email;
@@ -35,5 +37,13 @@ public class DeviceBean {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 }

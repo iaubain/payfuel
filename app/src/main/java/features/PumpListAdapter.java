@@ -17,31 +17,29 @@ import java.util.List;
 
 import databaseBean.DBHelper;
 import entities.Nozzle;
+import entities.Pump;
 import entities.WorkStatus;
 
 /**
  * Created by Owner on 5/4/2016.
  */
 
-public class PumpListAdapter extends ArrayAdapter<String> {
+public class PumpListAdapter extends ArrayAdapter<Pump> {
 
-    String tag="PayFuel: "+getClass().getSimpleName();
     private final Activity context;
-    private final List<String> pumpName;
-    private final List<String> imgid,pumpIds;
+    private final List<Pump> pumps;
     private final int userId;
+    String tag="PayFuel: "+getClass().getSimpleName();
     DBHelper db;
 
 
-    public PumpListAdapter(Activity context,int userId, List<String> pumpName, List<String> pumpIds, List<String> imgid) {
-        super(context, R.layout.pump_list_style, pumpName);
+    public PumpListAdapter(Activity context,int userId, List<Pump> pumps) {
+        super(context, R.layout.pump_list_style, pumps);
         // TODO Auto-generated constructor stub
         Log.d(tag,"Construct Pump List Adapter");
         this.context=context;
         this.userId=userId;
-        this.pumpName =pumpName;
-        this.pumpIds=pumpIds;
-        this.imgid=imgid;
+        this.pumps=pumps;
         db=new DBHelper(context);
 
     }
@@ -55,17 +53,23 @@ public class PumpListAdapter extends ArrayAdapter<String> {
         ImageView pumpImg = (ImageView) rowView.findViewById(R.id.icon);
         TextView pumpLabel = (TextView) rowView.findViewById(R.id.indicator);
 
+        //get pump object
+        Pump pump=pumps.get(position);
 
-        pumpName.setText(this.pumpName.get(position));
+        pumpName.setText(pump.getPumpName());
 
         List<WorkStatus>  statuses=new ArrayList<WorkStatus>();
-        statuses=db.getAllStatusPerPump(userId,Long.parseLong(String.valueOf(pumpIds.get(position))));
+        statuses=db.getAllStatusPerPump(userId,Long.parseLong(String.valueOf(pump.getPumpId())));
         Iterator iterator=statuses.iterator();
-        Nozzle nozzle=db.getSingleNozzle(Long.parseLong(String.valueOf(pumpIds.get(position))));
+        List<Nozzle> nozzles=db.getAllNozzlePerPump(Long.parseLong(String.valueOf(pump.getPumpId())));
 
         int nozzleDenialCheck = 0;
         int nozzleAcceptCheck = 0;
         int nozzleTaken = 0;
+        for(Nozzle nozzle: nozzles){
+            if(nozzle.getStatusCode()==8)
+                nozzleTaken+=1;
+        }
 
         while (iterator.hasNext()){
             WorkStatus ws=new WorkStatus();
@@ -81,9 +85,6 @@ public class PumpListAdapter extends ArrayAdapter<String> {
 //                pumpLabel.setTextColor(context.getResources().getColor(R.color.error));
 //
                 nozzleDenialCheck += 1;
-                break;
-            }else if(nozzle.getStatusCode() != 7){
-                nozzleTaken+=1;
                 break;
             }
 

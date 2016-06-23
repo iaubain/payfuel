@@ -28,7 +28,6 @@ import entities.WorkStatus;
 
 public class NozzleListAdapter extends ArrayAdapter<String> {
 
-    String tag="PayFuel: "+getClass().getSimpleName();
     private final Activity context;
     private final List<String> nozzleNameList;
 //    private final List<String> imgIdList;
@@ -39,6 +38,7 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
     private final int userId;
     private final int pumpId;
     private final View pumpView;
+    String tag="PayFuel: "+getClass().getSimpleName();
     DBHelper db;
     PumpAndNozzleList choosenPumpAndNozzle;
     NozzleDenied nd;
@@ -94,10 +94,16 @@ public class NozzleListAdapter extends ArrayAdapter<String> {
         //When a nozzle was already taken
         if(nozzle.getStatusCode()==8){
             nozzleIcon.setImageResource(R.drawable.nozzleinactive);
-            nozzleName.setText("Taken by:"+nozzle.getUserName());
+            nozzleName.setText("Taken by:" + nozzle.getUserName());
+            accept.setBackground(context.getResources().getDrawable(R.drawable.bckgreen));
+            accept.setTextColor(context.getResources().getColor(R.color.white));
+            accept.setText("Ѵ");
             accept.setEnabled(false);
             accept.setClickable(false);
 
+            refuse.setBackground(context.getResources().getDrawable(R.drawable.bckred));
+            refuse.setTextColor(context.getResources().getColor(R.color.white));
+            refuse.setText("X");
             refuse.setEnabled(false);
             refuse.setClickable(false);
 

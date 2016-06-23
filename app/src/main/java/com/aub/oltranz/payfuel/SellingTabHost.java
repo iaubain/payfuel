@@ -2,9 +2,11 @@ package com.aub.oltranz.payfuel;
 
 import android.app.AlertDialog;
 import android.app.TabActivity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import entities.DeviceIdentity;
 import entities.Logged_in_user;
 import features.HandleUrl;
 import features.HandleUrlInterface;
+import features.PreferenceManager;
 import models.LogoutData;
 import models.MapperClass;
 
@@ -45,6 +48,8 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
     Bundle savedBundle;
     Bundle bundle;
     StrictMode.ThreadPolicy policy;
+    IntentFilter intentFilterilter;
+    BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +68,8 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         //Check user validity
         userValidity();
 
-
+        PreferenceManager prefs=new PreferenceManager(this);
+        prefs.createPreference(userId);
     }
 
     public void userValidity(){
@@ -121,12 +127,12 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         TabHost.TabSpec tSpec;
         Intent intent;
 
-        intent = new Intent().setClass(this, Selling.class);
+        intent = new Intent().setClass(this, Selling.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtras(bundle);
         tSpec = tHost.newTabSpec("sell").setIndicator("Sell Portal") .setContent(intent);
         tHost.addTab(tSpec);
 
-        intent = new Intent().setClass(this, Report.class);
+        intent = new Intent().setClass(this, Report.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtras(bundle);
         tSpec = tHost.newTabSpec("report").setIndicator("Report Portal") .setContent(intent);
         tHost.addTab(tSpec);
@@ -144,6 +150,34 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         }
 
         tHost.setOnTabChangedListener(this);
+
+        try {
+
+            intentFilterilter=new IntentFilter("com.aub.oltranz.payfuel.MAIN_SERVICE");
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    //Handle the received Intent message
+                    String msg = intent.getStringExtra("msg");
+                    if(msg.equalsIgnoreCase("refresh")){
+                        refresh();
+                    }
+                }
+            };
+            registerReceiver(broadcastReceiver, intentFilterilter);
+
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void refresh(){
+        Log.d(tag,"Refreshing the tabs");
+
+        int currentTabId = tHost.getCurrentTab();
+        tHost.clearAllTabs();
+        initAppUI();
+        tHost.setCurrentTab(currentTabId);
     }
 
     public void initAppComponents(){
@@ -217,6 +251,14 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
                         db.deleteUser(userId);
                         db.deleteStatusByUser(userId);
 
+                        //removing shared preferences
+                        PreferenceManager prefs=new PreferenceManager(this);
+                        if(!prefs.deletePrefs()){
+                            Log.d(tag,"Deleting Shared preference failed");
+                        }
+
+                        unregisterReceiver(broadcastReceiver);
+
                         intent=new Intent(this,Home.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                         finish();
@@ -267,4 +309,35 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         }
         return super.onKeyDown(keyCode, event);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.e(tag, "Application called onPause");
+        try{
+            unregisterReceiver(broadcastReceiver);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e(tag, "Application called onResume");
+        try {
+            registerReceiver(broadcastReceiver, intentFilterilter);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        Log.v(tag, "Application called onStop");
+//        if(broadcastReceiver !=null)
+//        unregisterReceiver(broadcastReceiver);
+//    }
 }

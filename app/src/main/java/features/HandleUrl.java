@@ -27,7 +27,7 @@ public class HandleUrl {
     String urlResult;
     MapperClass mc;
 
-    public HandleUrl(HandleUrlInterface handUrl, Context context, String url, String method, String data) {
+    public HandleUrl(HandleUrlInterface handUrl, Context context, final String url, final String method, final String data) {
         Log.d(tag,"Initialize data to and from URL");
         this.handUrl = handUrl;
         this.context = context;
@@ -35,58 +35,30 @@ public class HandleUrl {
         this.method = method;
         this.data = data;
 
-        //Check wht's on URL
+//        //Check wht's on URL
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.v(tag,"Running a URL request thread");
+//                try{
+//
+//
+//                    //handle the result from URL
+//                    redirector(urlResult);
+//                }catch (Exception e){
+//                    urlResult = null;
+//                    Log.e(tag,"Error occured during the URL request "+e.getMessage());
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//        new Thread(runnable).start();
+
         urlResult=handleConnectivity(url,method,data);
+
         //handle the result from URL
         redirector(urlResult);
     }
-
-//    public void getData(String address){
-//        try{
-//            URL urlData = new URL(address);
-//            StringBuffer textResult = new StringBuffer();
-//            HttpURLConnection conn = (HttpURLConnection) urlData.openConnection();
-//            conn.connect();
-//            InputStreamReader in = new InputStreamReader((InputStream) conn.getContent());
-//            BufferedReader buff = new BufferedReader(in);
-//            //box.setText("Getting data ...");
-//            String line;
-//            do {
-//                line = buff.readLine();
-//                textResult.append(line + "\n");
-//            } while (line != null);
-//            String resultData=textResult.toString();
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void postData(){
-//        try {
-//            URL oURL = new URL(url);
-//            HttpURLConnection con = (HttpURLConnection) oURL.openConnection();
-//            con.setRequestMethod("POST");
-//            con.setRequestProperty("Content-type", "Application/json; charset=UTF-8");
-//            con.setDoOutput(true);
-//            con.setDoInput(true);
-//            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-//            wr.writeBytes(data);
-//            wr.flush();
-//            wr.close();
-//            System.out.println("Data to post :" + data);
-//            BufferedReader in1= new BufferedReader(new InputStreamReader(con.getInputStream()));
-//            String inputLine;
-//            StringBuffer response = new StringBuffer();
-//            while ((inputLine = in1.readLine()) != null) {
-//                response.append(inputLine);
-//            }
-//            in1.close();
-//            con.disconnect();
-//            //return response.toString();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public String handleConnectivity(String url, String method, String data){
         Log.d(tag,"Connection handling function");

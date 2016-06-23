@@ -1,6 +1,7 @@
 package progressive;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 
@@ -17,14 +18,18 @@ import entities.PaymentMode;
 import entities.SellingTransaction;
 import features.HandleUrl;
 import features.HandleUrlInterface;
+import features.PrintHandler;
 import models.MapperClass;
+import models.TransactionPrint;
 
 /**
  * Created by Owner on 5/23/2016.
  */
 public class TransactionProcess implements HandleUrlInterface {
+    private static final AtomicLong lastTime = new AtomicLong();
+    //Id generation of transactions
+    static AtomicInteger nextId = new AtomicInteger();
     String tag="PayFuel:"+getClass().getSimpleName();
-
     long transactionId;
     SellingTransaction st;
     int userId;
@@ -32,11 +37,6 @@ public class TransactionProcess implements HandleUrlInterface {
     DBHelper db;
     HandleUrl handUrl;
     MapperClass mc;
-
-
-    //Id generation of transactions
-    static AtomicInteger nextId = new AtomicInteger();
-    private static final AtomicLong lastTime = new AtomicLong();
     private int id;
     private Context context;
 
@@ -47,16 +47,28 @@ public class TransactionProcess implements HandleUrlInterface {
     }
 
 
-    public long transactionDatas(Context context, SellingTransaction st){
+    public long transactionDatas(Context context, final SellingTransaction st){
         this.context=context;
         this.st=st;
         this.userId=st.getUserId();
         this.transactionId=idGenerator(id);
         db=new DBHelper(context);
-        Log.d(tag,"Transaction ID created:"+transactionId);
+        Log.d(tag, "Transaction ID created:" + transactionId);
 
         st.setDeviceTransactionId(transactionId);
-        createTransaction(st);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.v(tag,"Running a printing thread");
+                try{
+                    createTransaction(st);
+                }catch (Exception e){
+                    tfi.feedsMessage(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        };
+        new Thread(runnable).start();
 
         return transactionId;
     }
@@ -88,11 +100,103 @@ public class TransactionProcess implements HandleUrlInterface {
         try{
             if((object.getClass().getSimpleName().equalsIgnoreCase("TransactionResponse"))&&(object!=null)){
                 TransactionResponse tr=(TransactionResponse) object;
+                final SellingTransaction st=tr.getSellingTransaction();
 
                 //_________Draft______\\
                 if(tr.getStatusCode()==500){
-                    SellingTransaction st=tr.getSellingTransaction();
+                    st.setStatus(500);
                     long dbId=db.updateTransaction(st);
+                }else if(tr.getStatusCode()==100){
+                    SellingTransaction stLocal=db.getSingleTransaction(st.getDeviceTransactionId());
+
+                    //Increment nozzles' index
+                    Nozzle nozzle=new Nozzle();
+                    nozzle=db.getSingleNozzle(st.getNozzleId());
+                    incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
+
+                    if(stLocal.getStatus()==302){
+                        //if the receipt generation is set to generate
+                        //__________________Print if the status was generated to generate receipt_____________________\\
+
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.v(tag,"Running a printing thread");
+                                try{
+                                    TransactionPrint tp=new TransactionPrint();
+
+                                    tp.setAmount(st.getAmount());
+                                    tp.setQuantity(st.getQuantity());
+                                    tp.setBranchName(db.getSingleUser(userId).getBranch_name());
+                                    tp.setDeviceId(db.getSingleDevice().getDeviceNo());
+                                    tp.setUserName(db.getSingleUser(userId).getName());
+                                    tp.setDeviceTransactionId(String.valueOf(st.getDeviceTransactionId()));
+                                    tp.setDeviceTransactionTime(st.getDeviceTransactionTime());
+                                    tp.setNozzleName(db.getSingleNozzle(st.getNozzleId()).getNozzleName());
+                                    tp.setPaymentMode(db.getSinglePaymentMode(st.getPaymentModeId()).getName());
+
+                                    if(st.getPlateNumber()!=null)
+                                        tp.setPlateNumber(st.getPlateNumber());
+                                    else
+                                        tp.setPlateNumber("N/A");
+
+                                    tp.setProductName(db.getSingleNozzle(st.getNozzleId()).getProductName());
+                                    tp.setPumpName(db.getSinglePump(st.getPumpId()).getPumpName());
+
+                                    if(st.getTelephone()!=null)
+                                        tp.setTelephone(st.getTelephone());
+                                    else
+                                        tp.setTelephone("N/A");
+
+                                    if(st.getTin()!=null)
+                                        tp.setTin(st.getTin());
+                                    else
+                                        tp.setTin("N/A");
+
+                                    if(st.getVoucherNumber()!=null)
+                                        tp.setVoucherNumber(st.getVoucherNumber());
+                                    else
+                                        tp.setVoucherNumber("N/A");
+
+                                    if(st.getName()!=null)
+                                        tp.setCompanyName(st.getName());
+                                    else
+                                        tp.setCompanyName("N/A");
+
+                                    if(st.getStatus()==100 || st.getStatus()==101){
+                                        tp.setPaymentStatus("Success");
+                                        //launch printing procedure
+                                        PrintHandler ph=new PrintHandler(context,tp);
+                                        String print=ph.transPrint();
+                                        if(!print.equalsIgnoreCase("Success")){
+                                            Log.e(tag,print);
+                                        }
+                                    }else{
+                                        //Update the status to generate the the print out finally
+                                        if(st.getStatus()!=500){
+                                            st.setStatus(st.getStatus()+1);
+
+                                            long dbId=db.updateTransaction(st);
+                                            if(dbId<=0){
+                                                Log.e(tag,"Failed to generate receipt");
+                                            }
+                                        }
+                                    }
+
+                                }catch (Exception e){
+                                    Log.e(tag,e.getMessage());
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        new Thread(runnable).start();
+
+                        Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh");
+                        context.sendBroadcast(i);
+                    }
+
+                    st.setStatus(100);
+                    db.updateTransaction(st);
                 }
                 //________End Draft_____\\
 
@@ -101,10 +205,10 @@ public class TransactionProcess implements HandleUrlInterface {
 //                    SellingTransaction st=tr.getSellingTransaction();
 //                    AsyncTransaction at=new AsyncTransaction();
 //                    at.setSum(0);
-//                    at.setDeviceNo(st.getDeviceNo());
+//                    at.setDeviceId(st.getDeviceId());
 //                    at.setUserId(st.getUserId());
 //                    at.setBranchId(st.getBranchId());
-//                    at.setTransactionId(st.getDeviceTransactionId());
+//                    at.setDeviceTransactionId(st.getDeviceTransactionId());
 //
 //                    long dbId=db.createAsyncTransaction(at);
 //                    if(dbId<=0){
@@ -170,16 +274,26 @@ public class TransactionProcess implements HandleUrlInterface {
 //        }
 
 
-            st.setStatus(100);
-            long transactonId=db.createTransaction(st);
-            if(transactionId<=0){
+        st.setStatus(301);
+        long transactonId=db.createTransaction(st);
+        AsyncTransaction at=new AsyncTransaction();
+        at.setSum(0);
+        at.setDeviceId(st.getDeviceNo());
+        at.setUserId(st.getUserId());
+        at.setBranchId(st.getBranchId());
+        at.setDeviceTransactionId(st.getDeviceTransactionId());
+        at.setSum(0);
+
+        long asyncDBId=db.createAsyncTransaction(at);
+
+        if(transactionId<=0 || asyncDBId<=0){
                 tfi.feedsMessage(context.getResources().getString(R.string.faillurenotification));
                 return;
             }
 
-            Nozzle nozzle=new Nozzle();
-            nozzle=db.getSingleNozzle(st.getNozzleId());
-            incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
+//            Nozzle nozzle=new Nozzle();
+//            nozzle=db.getSingleNozzle(st.getNozzleId());
+//            incrementIndex(st.getNozzleId(), nozzle.getNozzleIndex(),st.getQuantity());
             st=db.getSingleTransaction(st.getDeviceTransactionId());
 
 

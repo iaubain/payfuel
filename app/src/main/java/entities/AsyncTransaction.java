@@ -1,14 +1,23 @@
 package entities;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Created by user on 4/21/2016.
  */
 public class AsyncTransaction {
+    @JsonIgnore
     private int id;
+    @JsonProperty("userId")
     private int userId;
-    private String deviceNo;
+    @JsonProperty("deviceId")
+    private String deviceId;
+    @JsonProperty("branchId")
     private int branchId;
-    private long transactionId;
+    @JsonProperty("deviceTransactionId")
+    private long deviceTransactionId;
+    @JsonIgnore
     private int sum;
 
 
@@ -20,12 +29,12 @@ public class AsyncTransaction {
         this.userId = userId;
     }
 
-    public String getDeviceNo() {
-        return deviceNo;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setDeviceNo(String deviceNo) {
-        this.deviceNo = deviceNo;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public int getBranchId() {
@@ -36,12 +45,12 @@ public class AsyncTransaction {
         this.branchId = branchId;
     }
 
-    public long getTransactionId() {
-        return transactionId;
+    public long getDeviceTransactionId() {
+        return deviceTransactionId;
     }
 
-    public void setTransactionId(long transactionId) {
-        this.transactionId = transactionId;
+    public void setDeviceTransactionId(long deviceTransactionId) {
+        this.deviceTransactionId = deviceTransactionId;
     }
 
     public int getSum() {

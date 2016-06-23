@@ -4,6 +4,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.List;
 
+import models.Tanks;
 import models.UrlPumps;
 
 /**
@@ -12,21 +13,13 @@ import models.UrlPumps;
 public class LoadPumpsResponse {
     @JsonProperty("PumpDetailsModel")
     private
-    List<UrlPumps> urlPumpsList;
+    List<Tanks> urlTankList;
     @JsonProperty("message")
     private
     String message;
     @JsonProperty("statusCode")
     private
     int statusCode;
-
-    public List<UrlPumps> getUrlPumpsList() {
-        return urlPumpsList;
-    }
-
-    public void setUrlPumpsList(List<UrlPumps> urlPumpsList) {
-        this.urlPumpsList = urlPumpsList;
-    }
 
     public String getMessage() {
         return message;
@@ -42,5 +35,13 @@ public class LoadPumpsResponse {
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public List<Tanks> getUrlTankList() {
+        return urlTankList;
+    }
+
+    public void setUrlTankList(List<Tanks> urlTankList) {
+        this.urlTankList = urlTankList;
     }
 }
