@@ -22,7 +22,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
-
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -61,6 +60,10 @@
             </intent-filter>
         </receiver>
 
+        <service
+            android:name="features.CheckTransaction"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

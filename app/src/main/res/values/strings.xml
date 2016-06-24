@@ -15,6 +15,7 @@
     <string name="registerpumps">http://41.74.172.132:8080/PayFuel/PumpManagementService/assignUserToPumpNozzle</string>
     <string name="syncurl">http://41.74.172.132:8080/PayFuel/AndroidWebService/pos/sale/sync</string>
     <string name="checktransaction">http://41.74.172.132:8080/PayFuel/AndroidWebService/pos/sale/async</string>
+    <string name="mytransactions">http://41.74.172.132:8080/PayFuel/TransactionManagementService/transactions/day</string>
     <string name="post">POST</string>
     <string name="get">GET</string>
     <string name="connectionerror">Server/Connectivity Error</string>

@@ -29,7 +29,7 @@ public class TransactionProcess implements HandleUrlInterface {
     private static final AtomicLong lastTime = new AtomicLong();
     //Id generation of transactions
     static AtomicInteger nextId = new AtomicInteger();
-    String tag="PayFuel:"+getClass().getSimpleName();
+    String tag="PayFuel: "+getClass().getSimpleName();
     long transactionId;
     SellingTransaction st;
     int userId;
@@ -309,5 +309,8 @@ public class TransactionProcess implements HandleUrlInterface {
         nozzle.setNozzleIndex(newIndex);
         long dbId=db.updateNozzle(nozzle);
         Log.v(tag,"Nozzle "+dbId+" Updated");
+        Log.v(tag, "Synchronisation finished, Sending a refresh Broadcast Command");
+        Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh_processTransaction");
+        context.sendBroadcast(i);
     }
 }

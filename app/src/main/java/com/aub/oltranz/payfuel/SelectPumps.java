@@ -1,5 +1,6 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -40,6 +41,7 @@ import entities.DeviceIdentity;
 import entities.Logged_in_user;
 import entities.Nozzle;
 import entities.Pump;
+import entities.SellingTransaction;
 import entities.WorkStatus;
 import features.ExpandableListAdapter;
 import features.HandleUrl;
@@ -47,6 +49,7 @@ import features.HandleUrlInterface;
 import features.NozzleListAdapter;
 import features.PreferenceManager;
 import features.PumpListAdapter;
+import features.RecordAdapter;
 import features.ServiceCheck;
 import models.ChoosenPumpAndNozzle;
 import models.ChoosenPumps;
@@ -448,7 +451,13 @@ public class SelectPumps extends ActionBarActivity implements AdapterView.OnItem
                         public void run() {
                             Log.v(tag,"Running a printing thread");
                             try{
-                                registerPump();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        registerPump();
+                                    }
+                                });
+
                             }catch (Exception e){
                                 uiFeedBack(e.getMessage());
                                 e.printStackTrace();

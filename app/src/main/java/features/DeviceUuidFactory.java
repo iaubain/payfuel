@@ -34,8 +34,7 @@ public class DeviceUuidFactory {
                         // number which we store to a prefs file
                         try {
                             if (!"9774d56d682e549c".equals(androidId)) {
-                                uuid = UUID.nameUUIDFromBytes(androidId
-                                        .getBytes("utf8"));
+                                uuid = UUID.nameUUIDFromBytes(androidId.getBytes("utf8"));
                             } else {
                                 TelephonyManager telMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
                                 final String deviceId=telMgr.getDeviceId();

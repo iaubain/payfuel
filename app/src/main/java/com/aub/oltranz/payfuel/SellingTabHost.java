@@ -1,6 +1,8 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,10 +22,13 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
+
 import appBean.LogoutResponse;
 import databaseBean.DBHelper;
 import entities.DeviceIdentity;
 import entities.Logged_in_user;
+import features.CheckTransaction;
 import features.HandleUrl;
 import features.HandleUrlInterface;
 import features.PreferenceManager;
@@ -51,6 +56,8 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
     IntentFilter intentFilterilter;
     BroadcastReceiver broadcastReceiver;
 
+    boolean sync=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +77,43 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
 
         PreferenceManager prefs=new PreferenceManager(this);
         prefs.createPreference(userId);
+
+        Calendar calCheck = Calendar.getInstance();
+        Intent alarmIntentCheck = new Intent(context, CheckTransaction.class);
+        PendingIntent pintentCheck = PendingIntent.getService(context, 0, alarmIntentCheck, 0);
+        AlarmManager alarmCheck = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        //clean alarm cache for previous pending intent
+        alarmCheck.cancel(pintentCheck);
+        // schedule for every 5 min 5 * 60 * 1000
+        alarmCheck.setInexactRepeating(AlarmManager.RTC_WAKEUP, calCheck.getTimeInMillis(), 5 * 60 * 1000, pintentCheck);
+
+        try {
+
+            intentFilterilter=new IntentFilter("com.aub.oltranz.payfuel.MAIN_SERVICE");
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    //Handle the received Intent message
+                    String msg = intent.getStringExtra("msg");
+                    if(msg.equalsIgnoreCase("refresh_main")){
+                        refresh();
+                        Log.v(tag,"Refresh command from Main service");
+                    }
+                    if(msg.equalsIgnoreCase("refresh_check")){
+                        Log.v(tag,"Refresh command from Check service");
+                        refresh();
+                    }
+                    if(msg.equalsIgnoreCase("refresh_processTransaction")){
+                        Log.v(tag,"Refresh command from Transaction Process");
+                        refresh();
+                    }
+                }
+            };
+            registerReceiver(broadcastReceiver, intentFilterilter);
+
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     public void userValidity(){
@@ -151,28 +195,17 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
 
         tHost.setOnTabChangedListener(this);
 
-        try {
+//        Calendar cal = Calendar.getInstance();
+//        Intent alarmIntent = new Intent(context, AppMainService.class);
+//        PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+//        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//        //clean alarm cache for previous pending intent
+//        alarmCheck.cancel(pintent);
 
-            intentFilterilter=new IntentFilter("com.aub.oltranz.payfuel.MAIN_SERVICE");
-            broadcastReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    //Handle the received Intent message
-                    String msg = intent.getStringExtra("msg");
-                    if(msg.equalsIgnoreCase("refresh")){
-                        refresh();
-                    }
-                }
-            };
-            registerReceiver(broadcastReceiver, intentFilterilter);
-
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-        }
     }
 
     public void refresh(){
-        Log.d(tag,"Refreshing the tabs");
+        Log.d(tag, "Refreshing the tabs");
 
         int currentTabId = tHost.getCurrentTab();
         tHost.clearAllTabs();
@@ -258,6 +291,13 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
                         }
 
                         unregisterReceiver(broadcastReceiver);
+
+                        Calendar cal = Calendar.getInstance();
+                        Intent alarmIntent = new Intent(context, CheckTransaction.class);
+                        PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                        //clean alarm cache for previous pending intent
+                        alarm.cancel(pintent);
 
                         intent=new Intent(this,Home.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);

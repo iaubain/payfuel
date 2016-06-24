@@ -519,8 +519,19 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 public void onClick(View view) {
                     if(tel.getText().toString().length()<10){
                         tv.setText("Invalid number");
+                        String telNum=tel.getText().toString();
                     }else if(tel.getText().toString().length()>=10){
-                        payDetails.setTel(tel.getText().toString());
+                        String telNum=tel.getText().toString();
+                        telNum=telNum.replace("+","");
+
+                        String prefix=telNum.substring(0,3);
+
+                        if((prefix.equalsIgnoreCase("+250")||telNum.equalsIgnoreCase("2507")||(prefix.contains("+"))||prefix.contains("25")) && telNum.length()>=10){
+                            payDetails.setTel(telNum);
+                        } else{
+                                payDetails.setTel("25"+telNum);
+                        }
+
                         setConfirm(pumpDetails, transValue, payDetails);
                     }
                 }
@@ -529,7 +540,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    setPaymentMode(pumpDetails,transValue);
+                    setPaymentMode(pumpDetails, transValue);
                 }
             });
         }else if(paymentMode.getName().equalsIgnoreCase("voucher")){

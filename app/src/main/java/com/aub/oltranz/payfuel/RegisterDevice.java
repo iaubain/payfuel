@@ -17,6 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.UUID;
+
 import appBean.DeviceRegistrationResponse;
 import databaseBean.DBHelper;
 import entities.DeviceIdentity;
@@ -85,14 +87,11 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
                 devBean.setEmail(userName.getText().toString());
                 devBean.setPassword(password.getText().toString());
 
-                if(TextUtils.isEmpty(deviceSerial))
-                    devBean.setSerialNumber(deviceSerial);
-                else{
                     DeviceUuidFactory duf=new DeviceUuidFactory(this);
                     try{
-                        deviceSerial= String.valueOf(duf.getDeviceUuid());
+                        deviceSerial+="/" +String.valueOf(duf.getDeviceUuid());
                     }catch (Exception e){e.printStackTrace();}
-                }
+                devBean.setSerialNumber(deviceSerial);
 
 
                 //disabling the UI

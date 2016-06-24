@@ -30,6 +30,7 @@ import appBean.LoginResponse;
 import databaseBean.DBHelper;
 import entities.DeviceIdentity;
 import entities.Logged_in_user;
+import features.CheckTransaction;
 import features.HandleUrl;
 import features.HandleUrlInterface;
 import features.LoadPaymentMode;
@@ -105,6 +106,18 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
 //        progress.requestWindowFeature(Window.FEATURE_NO_TITLE);
 //        progress.setContentView(R.layout.progress);
 //        progress.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        Calendar cal = Calendar.getInstance();
+        Intent alarmIntent = new Intent(context, CheckTransaction.class);
+        PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        //clean alarm cache for previous pending intent
+        alarm.cancel(pintent);
+
+        alarmIntent = new Intent(context, AppMainService.class);
+        pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+        //clean alarm cache for previous pending intent
+        alarm.cancel(pintent);
     }
 
     //Handle longin button

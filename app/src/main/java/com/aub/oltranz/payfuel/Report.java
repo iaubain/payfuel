@@ -127,9 +127,14 @@ public class Report extends ActionBarActivity {
                 Log.v(tag,"Loading Transaction Logs");
                 try{
 
-                    List<SellingTransaction> sts= db.getAllTransactionsPerUser(userId);
-                    RecordAdapter ra=new RecordAdapter((Activity) context,userId,sts);
-                    transView.setAdapter(ra);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<SellingTransaction> sts = db.getAllTransactionsPerUser(userId);
+                            RecordAdapter ra = new RecordAdapter((Activity) context, userId, sts);
+                            transView.setAdapter(ra);
+                        }
+                    });
 
                 }catch (Exception e){
                     tv.setText("Error Occured");

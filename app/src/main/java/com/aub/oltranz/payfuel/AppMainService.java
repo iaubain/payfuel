@@ -141,19 +141,30 @@ public class AppMainService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e(tag,"Service Received Start Command");
+        Log.e(tag, "Service Received Start Command");
 
         int loggedCount=db.getLoggedUserCount();
         if(loggedCount<=0){
-            Log.e(tag,"No Logged User Available");
-            stopService();
+            Log.e(tag, "No Logged User Available");
             Calendar cal = Calendar.getInstance();
             Intent alarmIntent = new Intent(context, AppMainService.class);
             PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
             AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             //clean alarm cache for previous pending intent
             alarm.cancel(pintent);
+            stopService();
         }else{
+            if(userId==0){
+                Log.e(tag, "No Logged User with an ID 0");
+                Calendar cal = Calendar.getInstance();
+                Intent alarmIntent = new Intent(context, AppMainService.class);
+                PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+                AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                //clean alarm cache for previous pending intent
+                alarm.cancel(pintent);
+
+                stopService();
+            }
         List<AsyncTransaction> ats=db.getAllAsyncTransactions(userId);
         if(!ats.isEmpty()){
             for(AsyncTransaction at:ats){
@@ -282,6 +293,7 @@ public class AppMainService extends Service {
                         db.updateTransaction(st);
                         AsyncTransaction async=db.getSingleAsyncPerTransacton(st.getDeviceTransactionId());
                         async.setSum(async.getSum()+1);
+                        Log.d(tag,"the pending transaction: "+st.getDeviceTransactionId()+" has checksum: "+async.getSum());
                         db.updateAsyncTransaction(async);
                     }else if(ar.getStastusCode()==100){
                         if(st.getStatus()==302){
@@ -369,7 +381,7 @@ public class AppMainService extends Service {
                             };
                             new Thread(runnable).start();
 
-                            Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh");
+                            Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh_main");
                             sendBroadcast(i);
                             //________________________________________\\
                         }else{
@@ -382,7 +394,7 @@ public class AppMainService extends Service {
 
                             //Updating Nozzle indexes
                            db.updateNozzle(nozzle);
-                               Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh");
+                               Intent i = new Intent("com.aub.oltranz.payfuel.MAIN_SERVICE").putExtra("msg", "refresh_main");
                                sendBroadcast(i);
 
                         }
