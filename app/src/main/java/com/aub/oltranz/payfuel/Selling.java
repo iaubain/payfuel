@@ -1,5 +1,6 @@
 package com.aub.oltranz.payfuel;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -42,6 +43,7 @@ import entities.SellingTransaction;
 import entities.WorkStatus;
 import features.PaymentAdapter;
 import features.PrintHandler;
+import features.RecordAdapter;
 import features.StatusAdapter;
 import models.TransactionPrint;
 import progressive.Confirmation;
@@ -656,31 +658,51 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
             @Override
             public void onClick(View view) {
 
-                if(clickCount[0] <=0){
-                    sTransaction.setUserId(userId);
-                    sTransaction.setBranchId(branchId);
-                    sTransaction.setDeviceNo(db.getSingleDevice().getDeviceNo());
-                    sTransaction.setProductId(nozzle.getProductId());
-                    sTransaction.setPaymentModeId(pm.getPaymentModeId());
-                    sTransaction.setNozzleId(nozzle.getNozzleId());
-                    sTransaction.setPumpId(pump.getPumpId());
-                    sTransaction.setAmount(tValue.getAmnt());
-                    sTransaction.setQuantity(tValue.getQty());
-                    sTransaction.setPlateNumber(tValue.getPlateNumber());
-                    sTransaction.setTelephone(payD.getTel());
-                    sTransaction.setName(tValue.getName());
-                    sTransaction.setTin(tValue.getTin());
-                    sTransaction.setVoucherNumber(payD.getVoucher());
-                    sTransaction.setAuthenticationCode(payD.getAuthentCode());
-                    sTransaction.setAuthorisationCode(payD.getAuthorCode());
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.v(tag,"Loading Transaction Logs");
+                        try{
 
-                    setReceipt(startSellingProcess(sTransaction));
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(clickCount[0] <=0){
+                                        sTransaction.setUserId(userId);
+                                        sTransaction.setBranchId(branchId);
+                                        sTransaction.setDeviceNo(db.getSingleDevice().getDeviceNo());
+                                        sTransaction.setProductId(nozzle.getProductId());
+                                        sTransaction.setPaymentModeId(pm.getPaymentModeId());
+                                        sTransaction.setNozzleId(nozzle.getNozzleId());
+                                        sTransaction.setPumpId(pump.getPumpId());
+                                        sTransaction.setAmount(tValue.getAmnt());
+                                        sTransaction.setQuantity(tValue.getQty());
+                                        sTransaction.setPlateNumber(tValue.getPlateNumber());
+                                        sTransaction.setTelephone(payD.getTel());
+                                        sTransaction.setName(tValue.getName());
+                                        sTransaction.setTin(tValue.getTin());
+                                        sTransaction.setVoucherNumber(payD.getVoucher());
+                                        sTransaction.setAuthenticationCode(payD.getAuthentCode());
+                                        sTransaction.setAuthorisationCode(payD.getAuthorCode());
 
-                    clickCount[0] +=1;
-                }else{
-                    //do something when tries to click more than one time
-                    Log.e(tag,"Clicking more than one time same button");
-                }
+                                        setReceipt(startSellingProcess(sTransaction));
+
+                                        clickCount[0] +=1;
+                                    }else{
+                                        //do something when tries to click more than one time
+                                        Log.e(tag,"Clicking more than one time same button");
+                                    }
+                                }
+                            });
+
+                        }catch (Exception e){
+                            tv.setText("Error Occured");
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                new Thread(runnable).start();
+
             }
         });
 
