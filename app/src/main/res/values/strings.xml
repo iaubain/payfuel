@@ -16,6 +16,7 @@
     <string name="syncurl">http://41.74.172.132:8080/PayFuel/AndroidWebService/pos/sale/sync</string>
     <string name="checktransaction">http://41.74.172.132:8080/PayFuel/AndroidWebService/pos/sale/async</string>
     <string name="mytransactions">http://41.74.172.132:8080/PayFuel/TransactionManagementService/transactions/day</string>
+    <string name="adminlogin">http://41.74.172.132:8080/PayFuel/AndroidWebService/pos/adminLogin</string>
     <string name="post">POST</string>
     <string name="get">GET</string>
     <string name="connectionerror">Server/Connectivity Error</string>
@@ -28,4 +29,7 @@
     <string-array name="companydetail">
         <item>SP</item>
     </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

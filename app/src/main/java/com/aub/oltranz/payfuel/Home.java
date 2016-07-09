@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +21,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 
 import appBean.Login;
@@ -31,6 +29,7 @@ import databaseBean.DBHelper;
 import entities.DeviceIdentity;
 import entities.Logged_in_user;
 import features.CheckTransaction;
+import features.ForceLogout;
 import features.HandleUrl;
 import features.HandleUrlInterface;
 import features.LoadPaymentMode;
@@ -200,7 +199,7 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                 LoginResponse lr = (LoginResponse) object;
                 if (lr.getStatusCode() != 100) {
                     //when login response got a problem
-                    uiFeedBack(getResources().getString(R.string.loginproblem));
+                    uiFeedBack(getResources().getString(R.string.loginproblem)+" "+lr.getMessage());
                 } else {
                     //when the status code is Okay
                     //check the logged users
@@ -209,6 +208,13 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
                         //when user(s) is(are) found
                         int currentUserId = lr.getLogged_in_user().getUser_id();
                         List<Logged_in_user> users = db.getAllUsers();
+
+                        forceLogoutUser(users, currentUserId);
+//                        if(!forceLogoutUser(users,currentUserId)){
+//                            resetLogin();
+//                            uiFeedBack("Force logout the fore loggedIn Falied");
+//                        }
+
                         if (isUserLogged(users, currentUserId)) {
                             //user found in local database
                             Logged_in_user logged = lr.getLogged_in_user();
@@ -476,14 +482,41 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
     //check if the user was already there
     public boolean isUserLogged(List<Logged_in_user> userList, int currentUserId) {
 
-        Iterator iterator = userList.iterator();
-        while (iterator.hasNext()) {
-            Logged_in_user user = new Logged_in_user();
-            user = (Logged_in_user) iterator.next();
+        for(Logged_in_user user:userList){
             if (user.getUser_id() == currentUserId && user.getLogged() == 1)
                 return true;
         }
+
         return false;
+    }
+
+    public boolean forceLogoutUser(List<Logged_in_user> userList, int currentUserId) {
+        Log.d(tag,"Check user: "+ currentUserId);
+
+        int logoutPositiveCount=0, logoutNegativeCount=0;
+        for(Logged_in_user user:userList){
+            if(user.getUser_id() != currentUserId && user.getLogged() == 1){
+                //logout this user
+                DeviceIdentity di=db.getSingleDevice();
+                String url=getResources().getString(R.string.logouturl);
+                ForceLogout fl=new ForceLogout(this, currentUserId, di.getDeviceNo(), url);
+
+                //return fl.logout();
+                if(fl.logout())
+                    logoutPositiveCount++;
+                else{
+                    logoutNegativeCount++;
+                }
+            }
+        }
+        if(logoutNegativeCount>0)
+            return false;
+        else{
+            if(logoutPositiveCount>0)
+                return true;
+            else
+                return false;
+        }
     }
 
     public boolean loadPumps(Context context, int userId) {

@@ -27,6 +27,7 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -745,78 +746,83 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                     @Override
                     public void run() {
                         Log.v(tag,"Running a printing thread");
-                        try{
-                            if(st.getStatus()==100 || st.getStatus()==101){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try{
+                                    if(st.getStatus()==100 || st.getStatus()==101){
 
-                                TransactionPrint tp=new TransactionPrint();
+                                        TransactionPrint tp=new TransactionPrint();
 
-                                tp.setAmount(st.getAmount());
-                                tp.setQuantity(st.getQuantity());
-                                tp.setBranchName(db.getSingleUser(userId).getBranch_name());
-                                tp.setDeviceId(db.getSingleDevice().getDeviceNo());
-                                tp.setUserName(db.getSingleUser(userId).getName());
-                                tp.setDeviceTransactionId(String.valueOf(transactionId));
-                                tp.setDeviceTransactionTime(st.getDeviceTransactionTime());
-                                tp.setNozzleName(db.getSingleNozzle(st.getNozzleId()).getNozzleName());
-                                tp.setPaymentMode(db.getSinglePaymentMode(st.getPaymentModeId()).getName());
+                                        tp.setAmount(st.getAmount());
+                                        tp.setQuantity(st.getQuantity());
+                                        tp.setBranchName(db.getSingleUser(userId).getBranch_name());
+                                        tp.setDeviceId(db.getSingleDevice().getDeviceNo());
+                                        tp.setUserName(db.getSingleUser(userId).getName());
+                                        tp.setDeviceTransactionId(String.valueOf(transactionId));
+                                        tp.setDeviceTransactionTime(st.getDeviceTransactionTime());
+                                        tp.setNozzleName(db.getSingleNozzle(st.getNozzleId()).getNozzleName());
+                                        tp.setPaymentMode(db.getSinglePaymentMode(st.getPaymentModeId()).getName());
 
-                                if(st.getPlateNumber()!=null)
-                                    tp.setPlateNumber(st.getPlateNumber());
-                                else
-                                    tp.setPlateNumber("N/A");
+                                        if(st.getPlateNumber()!=null)
+                                            tp.setPlateNumber(st.getPlateNumber());
+                                        else
+                                            tp.setPlateNumber("N/A");
 
-                                tp.setProductName(db.getSingleNozzle(st.getNozzleId()).getProductName());
-                                tp.setPumpName(db.getSinglePump(st.getPumpId()).getPumpName());
+                                        tp.setProductName(db.getSingleNozzle(st.getNozzleId()).getProductName());
+                                        tp.setPumpName(db.getSinglePump(st.getPumpId()).getPumpName());
 
-                                if(st.getTelephone()!=null)
-                                    tp.setTelephone(st.getTelephone());
-                                else
-                                    tp.setTelephone("N/A");
+                                        if(st.getTelephone()!=null)
+                                            tp.setTelephone(st.getTelephone());
+                                        else
+                                            tp.setTelephone("N/A");
 
-                                if(st.getTin()!=null)
-                                    tp.setTin(st.getTin());
-                                else
-                                    tp.setTin("N/A");
+                                        if(st.getTin()!=null)
+                                            tp.setTin(st.getTin());
+                                        else
+                                            tp.setTin("N/A");
 
-                                if(st.getVoucherNumber()!=null)
-                                    tp.setVoucherNumber(st.getVoucherNumber());
-                                else
-                                    tp.setVoucherNumber("N/A");
+                                        if(st.getVoucherNumber()!=null)
+                                            tp.setVoucherNumber(st.getVoucherNumber());
+                                        else
+                                            tp.setVoucherNumber("N/A");
 
-                                if(st.getName()!=null)
-                                    tp.setCompanyName(st.getName());
-                                else
-                                    tp.setCompanyName("N/A");
+                                        if(st.getName()!=null)
+                                            tp.setCompanyName(st.getName());
+                                        else
+                                            tp.setCompanyName("N/A");
 
-                                if(st.getStatus()==100 || st.getStatus()==101){
-                                    tp.setPaymentStatus("Success");
-                                    //launch printing procedure
-                                    PrintHandler ph=new PrintHandler(context,tp);
-                                    String print=ph.transPrint();
-                                    if(!print.equalsIgnoreCase("Success")){
-                                        uiFeedBack(print);
-                                    }
-                                }else{
-                                    //Update the status to generate the the print out finally
-                                    if(st.getStatus()!=500){
-                                        st.setStatus(st.getStatus()+1);
+                                        if(st.getStatus()==100 || st.getStatus()==101){
+                                            tp.setPaymentStatus("Success");
+                                            //launch printing procedure
+                                            PrintHandler ph=new PrintHandler(context,tp);
+                                            String print=ph.transPrint();
+                                            if(!print.equalsIgnoreCase("Success")){
+                                                uiFeedBack(print);
+                                            }
+                                        }else{
+                                            //Update the status to generate the the print out finally
+                                            if(st.getStatus()!=500){
+                                                st.setStatus(st.getStatus()+1);
 
-                                        long dbId=db.updateTransaction(st);
-                                        if(dbId<=0){
-                                            uiFeedBack("Failed to generate receipt");
+                                                long dbId=db.updateTransaction(st);
+                                                if(dbId<=0){
+                                                    uiFeedBack("Failed to generate receipt");
+                                                }
+                                            }
                                         }
+                                    }else if(st.getStatus()==301){
+                                        st.setStatus(302);
+                                        long dbId=db.updateTransaction(st);
+                                        if(dbId <=0)
+                                            uiFeedBack("Failed to generate receipt: "+transactionId);
                                     }
+                                }catch (Exception e){
+                                    uiFeedBack(e.getMessage());
+                                    e.printStackTrace();
                                 }
-                            }else if(st.getStatus()==301){
-                                st.setStatus(302);
-                                long dbId=db.updateTransaction(st);
-                                if(dbId <=0)
-                                    uiFeedBack("Failed to generate receipt: "+transactionId);
                             }
-                        }catch (Exception e){
-                            uiFeedBack(e.getMessage());
-                            e.printStackTrace();
-                        }
+                        });
                     }
                 };
                 new Thread(runnable).start();
@@ -826,7 +832,7 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 //initAppUI();
 
                 refresh();
-
+                uiTransactionData(st);
                 dialog.dismiss();
             }
         });
@@ -837,16 +843,26 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
                 receipt = false;
                 resetValue();
 
+                SellingTransaction st=db.getSingleTransaction(transactionId);
                 //initialize activity UI
                 //initAppUI();
                 refresh();
-
+                uiTransactionData(st);
                 dialog.dismiss();
             }
         });
 
         dialog.show();
     }
+
+   public void uiTransactionData(SellingTransaction st){
+       if(st.getStatus()==100 || st.getStatus()==101)
+           uiFeedBack("Successful Transaction: "+st.getDeviceTransactionId());
+       else if(st.getStatus()==301 || st.getStatus()==302)
+           uiFeedBack("Pending Transaction: " + st.getDeviceTransactionId());
+       else if(st.getStatus()==500 || st.getStatus()==501)
+           uiFeedBack("Cancelled Transaction: " + st.getDeviceTransactionId());
+   }
 
     public void resetValue(){
         Log.d(tag,"Resetting Progressive Transaction Objects");
@@ -878,11 +894,12 @@ public class Selling extends ActionBarActivity implements AdapterView.OnItemClic
 //                tv.setText("");
 //            }
 //        }, 3000);
-        if(dialog.isShowing())
-            dialog.dismiss();
+//        if(dialog.isShowing())
+//            dialog.dismiss();
         if(message==null || TextUtils.isEmpty(message)){
             tv.setText(getResources().getString(R.string.nulluifeedback));
         }else{
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             tv.setText(message);
         }
     }

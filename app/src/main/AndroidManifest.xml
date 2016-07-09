@@ -63,7 +63,13 @@
         <service
             android:name="features.CheckTransaction"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+        <service
+            android:name="features.LogoutService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".spadmin.SpAdmin"></activity>
     </application>
 
 </manifest>

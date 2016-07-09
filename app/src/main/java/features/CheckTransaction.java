@@ -73,7 +73,7 @@ public class CheckTransaction extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(tag, "Main Service is Started");
+        Log.d(tag, "CheckTransaction Service is Started");
         db = new DBHelper(this);
         prefs=new PreferenceManager(this);
 
@@ -272,7 +272,7 @@ public class CheckTransaction extends Service {
                                         //decrease nozzle indexes
                                         Nozzle nozzle=db.getSingleNozzle(st.getNozzleId());
                                         nozzle.setNozzleIndex((double) ttc.getIndexafter());
-                                        Log.v(tag,"Updating Nozzle Indexes to: "+ttc.getIndexafter());
+                                        Log.v(tag,"Updating Nozzle: "+nozzle.getNozzleId()+" Indexes to: "+ttc.getIndexafter());
                                         //Updating Nozzle indexes
                                         db.updateNozzle(nozzle);
 

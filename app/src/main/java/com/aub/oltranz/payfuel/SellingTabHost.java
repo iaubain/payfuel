@@ -31,6 +31,7 @@ import entities.Logged_in_user;
 import features.CheckTransaction;
 import features.HandleUrl;
 import features.HandleUrlInterface;
+import features.LogoutService;
 import features.PreferenceManager;
 import models.LogoutData;
 import models.MapperClass;
@@ -228,17 +229,43 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         Log.v(tag, "Logging out...");
 
         if (doubleBackToExitPressedOnce) {
-            DeviceIdentity di=db.getSingleDevice();
-            LogoutData ld=new LogoutData();
-            try {
-                ld.setDevId(di.getDeviceNo());
-                ld.setUserId(userId);
-                mc=new MapperClass();
+//            DeviceIdentity di=db.getSingleDevice();
+//            LogoutData ld=new LogoutData();
+//            try {
+//                ld.setDevId(di.getDeviceNo());
+//                ld.setUserId(userId);
+//                mc=new MapperClass();
+//
+//                handleUrl=new HandleUrl(this,this,getResources().getString(R.string.logouturl),getResources().getString(R.string.post),mc.mapping(ld));
+//            }catch (Exception e){
+//                uiFeedBack(e.getMessage());
+//            }
 
-                handleUrl=new HandleUrl(this,this,getResources().getString(R.string.logouturl),getResources().getString(R.string.post),mc.mapping(ld));
-            }catch (Exception e){
-                uiFeedBack(e.getMessage());
-            }
+
+            //unregisterReceiver(broadcastReceiver);
+
+            Intent logoutIntent=new Intent(this, LogoutService.class);
+            Bundle logotBundle=new Bundle();
+            logotBundle.putInt("userId",userId);
+            DeviceIdentity di=db.getSingleDevice();
+            logotBundle.putString("deviceNo",di.getDeviceNo());
+
+            logoutIntent.putExtras(logotBundle);
+
+            this.startService(logoutIntent);
+
+
+            Calendar cal = Calendar.getInstance();
+            Intent alarmIntent = new Intent(context, CheckTransaction.class);
+            PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
+            AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            //clean alarm cache for previous pending intent
+            alarm.cancel(pintent);
+
+            intent=new Intent(this,Home.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            finish();
+            startActivity(intent);
 
             return;
         }
@@ -262,55 +289,6 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
 
     @Override
     public void resultObject(Object object) {
-        if (object == null) {
-            uiFeedBack(getResources().getString(R.string.connectionerror));
-        }else{
-            if (object.getClass().getSimpleName().equalsIgnoreCase("LogoutResponse")){
-                LogoutResponse lr=(LogoutResponse) object;
-                try{
-                    if(lr.getStatusCode() != 100)
-                        uiFeedBack(lr.getMessage());
-                    else{
-                        long log=0;
-                        //delete Work Status
-                        db.deleteStatusByUser(userId);
-
-                        //delete user
-                        // db.truncateTransactions();
-                        Logged_in_user user=new Logged_in_user();
-                        user.setLogged(0);
-                        log=db.updateUser(user);
-                        Log.v(tag, "User log status 0: " + log);
-                        db.deleteUser(userId);
-                        db.deleteStatusByUser(userId);
-
-                        //removing shared preferences
-                        PreferenceManager prefs=new PreferenceManager(this);
-                        if(!prefs.deletePrefs()){
-                            Log.d(tag,"Deleting Shared preference failed");
-                        }
-
-                        unregisterReceiver(broadcastReceiver);
-
-                        Calendar cal = Calendar.getInstance();
-                        Intent alarmIntent = new Intent(context, CheckTransaction.class);
-                        PendingIntent pintent = PendingIntent.getService(context, 0, alarmIntent, 0);
-                        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                        //clean alarm cache for previous pending intent
-                        alarm.cancel(pintent);
-
-                        intent=new Intent(this,Home.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                        finish();
-                        startActivity(intent);
-                    }
-                }catch (Exception e){
-                    uiFeedBack(getResources().getString(R.string.faillurenotification));
-                }
-            }else{
-                uiFeedBack(getResources().getString(R.string.ambiguous));
-            }
-        }
     }
 
     @Override
@@ -355,6 +333,7 @@ public class SellingTabHost extends TabActivity implements TabHost.OnTabChangeLi
         super.onPause();
         Log.e(tag, "Application called onPause");
         try{
+
             unregisterReceiver(broadcastReceiver);
         }catch (Exception e){
             e.printStackTrace();

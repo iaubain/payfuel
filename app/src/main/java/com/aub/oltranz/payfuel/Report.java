@@ -3,6 +3,7 @@ package com.aub.oltranz.payfuel;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.aub.oltranz.payfuel.spadmin.SpAdmin;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -146,6 +149,16 @@ public class Report extends ActionBarActivity {
 
 
         dialog.show();
+    }
+
+    public void admin(View v){
+        Intent intent=new Intent(this, SpAdmin.class);
+        Bundle bundle=new Bundle();
+        bundle.putInt("userId", userId);
+        bundle.putInt("branchId", branchId);
+
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     public void report(View v){
