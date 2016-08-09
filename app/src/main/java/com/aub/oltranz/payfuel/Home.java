@@ -41,7 +41,7 @@ import models.MapperClass;
 public class Home extends ActionBarActivity implements HandleUrlInterface {
     String tag = "PayFuel: " + getClass().getSimpleName();
 
-    TextView tv;
+    TextView tv, regLink, spAdminLink;
     EditText pin;
     Button login;
     Context context;
@@ -86,6 +86,8 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
         tv = (TextView) findViewById(R.id.tv);
         pin = (EditText) findViewById(R.id.pin);
         login = (Button) findViewById(R.id.login);
+        regLink = (TextView) findViewById(R.id.regLink);
+        spAdminLink = (TextView) findViewById(R.id.spAdminLink);
         context = this;
     }
 
@@ -146,6 +148,31 @@ public class Home extends ActionBarActivity implements HandleUrlInterface {
             String jsonData = mapperClass.mapping(login);
             hu = new HandleUrl(this, context, getResources().getString(R.string.loginurl), getResources().getString(R.string.post), jsonData);
 
+        }
+    }
+
+    public void register(View v){
+        Log.d(tag,"Registering Device Triggered");
+        intent = new Intent(this, RegisterDevice.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        finish();
+        startActivity(intent);
+    }
+
+    public void spAdmin(View v){
+        Log.d(tag,"SP Admin Triggered");
+        Intent intent = getPackageManager().getLaunchIntentForPackage("com.payfuel.spadmin.spadmin");
+        if (intent != null) {
+            // We found the activity now start the activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            uiFeedBack("SP Admin App Is Missing...!");
+//            // Bring user to the market or let them choose an app?
+//            intent = new Intent(Intent.ACTION_VIEW);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            intent.setData(Uri.parse("market://details?id=" + "com.package.name"));
+//            startActivity(intent);
         }
     }
 

@@ -106,7 +106,6 @@ public class LogoutService extends Service {
 
         @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -225,8 +224,8 @@ public class LogoutService extends Service {
     }
 
     public void uiFeedBack(String message){
-        Log.e(tag,"Error: "+message);
-        Toast.makeText(this, "Error: "+message, Toast.LENGTH_LONG).show();
+        Log.e(tag, message);
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         serviceDone();
     }
 

@@ -31,7 +31,7 @@ import models.MapperClass;
 public class RegisterDevice extends ActionBarActivity implements HandleUrlInterface{
 
     String tag="PayFuel: "+getClass().getSimpleName();
-    TextView tv;
+    TextView tv, loginLink, spAdminLink;
     EditText userName, password,devName,reDevName;
     Button reg;
     String devRegUrl, deviceSerial,deviceName;
@@ -61,6 +61,8 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
     public void initActUI(){
         Log.d(tag,"Initialize Activity UI");
         tv=(TextView) findViewById(R.id.tv);
+        loginLink=(TextView) findViewById(R.id.loginLink);
+        spAdminLink=(TextView) findViewById(R.id.spAdminLink);
         userName=(EditText) findViewById(R.id.username);
         password=(EditText) findViewById(R.id.pw);
         devName=(EditText) findViewById(R.id.devname);
@@ -70,10 +72,30 @@ public class RegisterDevice extends ActionBarActivity implements HandleUrlInterf
 
     //initialize Activity components
     public void initActComponent(){
-        Log.d(tag,"Initialize Activity Components");
+        Log.d(tag, "Initialize Activity Components");
         deviceSerial= Build.SERIAL != Build.UNKNOWN ? Build.SERIAL : Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         db=new DBHelper(context);
         mapper=new MapperClass();
+    }
+
+    public void login(View v){
+        Log.d(tag,"Registering Device Triggered");
+        intent = new Intent(this, Home.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        finish();
+        startActivity(intent);
+    }
+
+    public void spAdmin(View v){
+        Log.d(tag,"SP Admin Triggered");
+        Intent intent = getPackageManager().getLaunchIntentForPackage("com.payfuel.spadmin.spadmin");
+        if (intent != null) {
+            // We found the activity now start the activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            uiFeedBack("SP Admin App Is Missing...!");
+        }
     }
 
     public void register(View v){
